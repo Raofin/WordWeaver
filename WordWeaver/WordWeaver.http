@@ -1,0 +1,6 @@
+@WordWeaver_HostAddress = http://localhost:5186
+
+GET {{WordWeaver_HostAddress}}/
+Accept: application/json
+
+###
