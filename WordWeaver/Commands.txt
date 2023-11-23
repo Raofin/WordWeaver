@@ -1,0 +1,1 @@
+﻿Scaffold-DbContext 'Name=ConnectionStrings:DefaultConnection' Microsoft.EntityFrameworkCore.SqlServer -OutputDir "Data/Entity" -ContextDir "Data" -Context "WordWeaverContext" -f
