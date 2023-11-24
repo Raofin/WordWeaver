@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace WordWeaver.Models
 {
@@ -23,9 +24,10 @@ namespace WordWeaver.Models
         public Roles Role { get; set; }
     }
 
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum Roles
     {
-        Admin,
-        User
+        Admin = 1,
+        User = 2
     }
 }
