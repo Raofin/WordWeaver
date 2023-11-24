@@ -9,9 +9,11 @@ public partial class User
 
     public string Username { get; set; } = null!;
 
+    public string Email { get; set; } = null!;
+
     public string PasswordHash { get; set; } = null!;
 
-    public string Email { get; set; } = null!;
+    public string Salt { get; set; } = null!;
 
     public DateTime? CreatedAt { get; set; }
 
@@ -20,4 +22,6 @@ public partial class User
     public bool? IsActive { get; set; }
 
     public virtual ICollection<Token> Tokens { get; set; } = new List<Token>();
+
+    public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 }

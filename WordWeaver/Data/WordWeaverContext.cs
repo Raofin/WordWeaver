@@ -24,6 +24,8 @@ public partial class WordWeaverContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<UserRole> UserRoles { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Name=ConnectionStrings:DefaultConnection");
 
@@ -31,19 +33,16 @@ public partial class WordWeaverContext : DbContext
     {
         modelBuilder.Entity<Otp>(entity =>
         {
-            entity.ToTable("Otps", "auth");
+            entity.ToTable("Otps", "auth", tb => tb.HasTrigger("trgOtpsSetUpdateDatetime"));
 
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
+                .HasDefaultValueSql("(getutcdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Email).HasMaxLength(255);
             entity.Property(e => e.ExpiresAt)
-                .HasDefaultValueSql("(dateadd(minute,(5),getutcdate()))")
+                .HasDefaultValueSql("(dateadd(day,(1),getutcdate()))")
                 .HasColumnType("datetime");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.OtpValue)
-                .HasMaxLength(10)
-                .IsFixedLength();
+            entity.Property(e => e.OtpValue).HasMaxLength(50);
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(NULL)")
                 .HasColumnType("datetime");
@@ -51,13 +50,13 @@ public partial class WordWeaverContext : DbContext
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.ToTable("Roles", "auth");
+            entity.ToTable("Roles", "enum", tb => tb.HasTrigger("trgRolesSetUpdateDatetime"));
 
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getutcdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.Name).HasMaxLength(50);
+            entity.Property(e => e.RoleName).HasMaxLength(50);
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(NULL)")
                 .HasColumnType("datetime");
@@ -65,7 +64,7 @@ public partial class WordWeaverContext : DbContext
 
         modelBuilder.Entity<Token>(entity =>
         {
-            entity.ToTable("Tokens", "auth");
+            entity.ToTable("Tokens", "auth", tb => tb.HasTrigger("trgTokensSetUpdateDatetime"));
 
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getutcdate())")
@@ -80,13 +79,12 @@ public partial class WordWeaverContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.Tokens)
                 .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FK_Tokens_Users");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.ToTable("Users", "auth");
+            entity.ToTable("Users", "auth", tb => tb.HasTrigger("trgUsersSetUpdateDatetime"));
 
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getutcdate())")
@@ -97,6 +95,29 @@ public partial class WordWeaverContext : DbContext
                 .HasDefaultValueSql("(NULL)")
                 .HasColumnType("datetime");
             entity.Property(e => e.Username).HasMaxLength(255);
+        });
+
+        modelBuilder.Entity<UserRole>(entity =>
+        {
+            entity.ToTable("UserRoles", "auth", tb => tb.HasTrigger("trgUserRolesSetUpdateDatetime"));
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("(NULL)")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.UserRoles)
+                .HasForeignKey(d => d.RoleId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_UserRoles_Roles");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserRoles)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_UserRoles_Users");
         });
 
         OnModelCreatingPartial(modelBuilder);

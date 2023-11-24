@@ -3,9 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using WordWeaver;
 using WordWeaver.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Dependencies.RegisterServices(builder.Services);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
