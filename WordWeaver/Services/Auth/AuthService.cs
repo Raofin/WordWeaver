@@ -11,6 +11,8 @@ using WordWeaver.Data.Entity;
 using WordWeaver.Helper;
 using WordWeaver.Models;
 
+#pragma warning disable CS8604
+
 namespace WordWeaver.Services.Auth;
 
 public class AuthService(IConfiguration config, WordWeaverContext context) : IAuthService
@@ -36,6 +38,7 @@ public class AuthService(IConfiguration config, WordWeaverContext context) : IAu
             Message = "Login successful.",
             StatusCode = HttpStatusCode.OK,
             Token = GenerateAuthToken(user),
+            User = user,
         };
     }
 
@@ -68,7 +71,7 @@ public class AuthService(IConfiguration config, WordWeaverContext context) : IAu
                 await context.SaveChangesAsync();
 
                 await context.UserRoles.AddAsync(new UserRole {
-                    RoleId = (long)model.Role,
+                    RoleId = (int)Roles.User,
                     UserId = addedUser.Entity.UserId,
                 });
 
@@ -85,6 +88,7 @@ public class AuthService(IConfiguration config, WordWeaverContext context) : IAu
                     Message = "User created successfully.",
                     StatusCode = HttpStatusCode.OK,
                     Token = login.Token,
+                    User = addedUser.Entity,
                 };
 
             } catch (Exception ex)
@@ -136,7 +140,7 @@ public class AuthService(IConfiguration config, WordWeaverContext context) : IAu
         var salt = GenerateSalt();
         var combinedPassword = $"{password}{salt}";
         var passwordHasher = new PasswordHasher<IdentityUser>();
-        var hashedPassword = passwordHasher.HashPassword(null, combinedPassword);
+        var hashedPassword = passwordHasher.HashPassword(new IdentityUser(), combinedPassword);
 
         return (hashedPassword, salt);
     }
@@ -145,7 +149,7 @@ public class AuthService(IConfiguration config, WordWeaverContext context) : IAu
     {
         var combinedPassword = $"{providedPassword}{saltFromDatabase}";
         var passwordHasher = new PasswordHasher<IdentityUser>();
-        var passwordVerificationResult = passwordHasher.VerifyHashedPassword(null, hashedPasswordFromDatabase, combinedPassword);
+        var passwordVerificationResult = passwordHasher.VerifyHashedPassword(new IdentityUser(), hashedPasswordFromDatabase, combinedPassword);
 
         return passwordVerificationResult == PasswordVerificationResult.Success;
     }

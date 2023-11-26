@@ -1,6 +1,7 @@
 ﻿using System.Net;
+using WordWeaver.Data.Entity;
 
-namespace WordWeaver.Helper;
+namespace WordWeaver.Models;
 
 public class CommonResponse
 {
@@ -21,4 +22,5 @@ public class ResponseHelper<T> : CommonResponse
 public class AuthResponse : CommonResponse
 {
     public string? Token { get; set; }
+    public User? User { get; set; }
 }

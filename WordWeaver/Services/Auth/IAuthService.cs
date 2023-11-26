@@ -1,5 +1,4 @@
-﻿using WordWeaver.Helper;
-using WordWeaver.Models;
+﻿using WordWeaver.Models;
 
 namespace WordWeaver.Services.Auth
 {

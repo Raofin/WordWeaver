@@ -79,6 +79,7 @@ public partial class WordWeaverContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.Tokens)
                 .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FK_Tokens_Users");
         });
 

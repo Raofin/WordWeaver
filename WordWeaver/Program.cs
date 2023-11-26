@@ -7,6 +7,10 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using WordWeaver;
 using WordWeaver.Data;
+using System.Text.Json.Serialization;
+
+
+#pragma warning disable CS8604
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +19,11 @@ Dependencies.RegisterServices(builder.Services);
 builder.Services.AddControllers(options => {
     options.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()));
 });
+
+builder.Services.AddMvc().AddJsonOptions(o => {
+    o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
