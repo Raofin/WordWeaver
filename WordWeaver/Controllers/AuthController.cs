@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using WordWeaver.Models;
+using WordWeaver.Dtos;
 using WordWeaver.Services.Auth;
 
 namespace WordWeaver.Controllers
@@ -12,7 +12,7 @@ namespace WordWeaver.Controllers
     {
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginModel model)
+        public async Task<IActionResult> Login(LoginDto model)
         {
             if (ModelState.IsValid)
             {
@@ -28,7 +28,7 @@ namespace WordWeaver.Controllers
 
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegistrationModel model)
+        public async Task<IActionResult> Register(RegistrationDto model)
         {
             if (ModelState.IsValid)
             {

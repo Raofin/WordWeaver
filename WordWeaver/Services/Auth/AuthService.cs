@@ -9,21 +9,22 @@ using System.Text;
 using WordWeaver.Data;
 using WordWeaver.Data.Entity;
 using WordWeaver.Helper;
-using WordWeaver.Models;
+using WordWeaver.Dtos;
+using AutoMapper;
 
 #pragma warning disable CS8604
 
 namespace WordWeaver.Services.Auth;
 
-public class AuthService(IConfiguration config, WordWeaverContext context) : IAuthService
+public class AuthService(IConfiguration config, WordWeaverContext context, IMapper mapper) : IAuthService
 {
     #region ### User Login and Registration ###
 
-    public async Task<AuthResponse> Login(LoginModel model)
+    public async Task<AuthResponse> Login(LoginDto model)
     {
         // check if user exists
         var user = await context.Users
-            .Include(u => u.UserRoles)
+            .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
             .FirstOrDefaultAsync(u => u.Username == model.UsernameOrEmail || u.Email == model.UsernameOrEmail);
 
         if (user == null || !VerifyPassword(user.PasswordHash, user.Salt, model.Password))
@@ -38,11 +39,11 @@ public class AuthService(IConfiguration config, WordWeaverContext context) : IAu
             Message = "Login successful.",
             StatusCode = HttpStatusCode.OK,
             Token = GenerateAuthToken(user),
-            User = user,
+            User = mapper.Map<UserDto>(user),
         };
     }
 
-    public async Task<AuthResponse> Register(RegistrationModel model)
+    public async Task<AuthResponse> Register(RegistrationDto model)
     {
         using (var transaction = await context.Database.BeginTransactionAsync())
         {
@@ -79,7 +80,7 @@ public class AuthService(IConfiguration config, WordWeaverContext context) : IAu
                 await transaction.CommitAsync();
 
                 // login user and return token
-                var login = await Login(new LoginModel { 
+                var login = await Login(new LoginDto { 
                     UsernameOrEmail = addedUser.Entity.Email, 
                     Password = model.Password 
                 });
@@ -88,7 +89,7 @@ public class AuthService(IConfiguration config, WordWeaverContext context) : IAu
                     Message = "User created successfully.",
                     StatusCode = HttpStatusCode.OK,
                     Token = login.Token,
-                    User = addedUser.Entity,
+                    User = login.User,
                 };
 
             } catch (Exception ex)

@@ -1,10 +1,11 @@
-﻿using WordWeaver.Models;
+﻿using WordWeaver.Dtos;
 
 namespace WordWeaver.Services.Auth
 {
     public interface IAuthService
     {
-        Task<AuthResponse> Login(LoginModel model);
-        Task<AuthResponse> Register(RegistrationModel model);
+        Task<AuthResponse> Login(LoginDto model);
+
+        Task<AuthResponse> Register(RegistrationDto model);
     }
 }
