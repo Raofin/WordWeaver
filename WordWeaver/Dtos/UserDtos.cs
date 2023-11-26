@@ -9,10 +9,10 @@ public class LoginDto
 
 public class RegistrationDto
 {
-    [StringLength(20, MinimumLength = 6)]
+    [StringLength(20, MinimumLength = 2)]
     public string Username { get; set; } = null!;
 
-    [StringLength(20, MinimumLength = 8)]
+    [StringLength(20, MinimumLength = 2)]
     [DataType(DataType.Password)]
     public string Password { get; set; } = null!;
 

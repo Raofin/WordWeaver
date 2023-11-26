@@ -24,8 +24,8 @@ public class AuthService(IConfiguration config, WordWeaverContext context, IMapp
     {
         // check if user exists
         var user = await context.Users
-            .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
-            .FirstOrDefaultAsync(u => u.Username == model.UsernameOrEmail || u.Email == model.UsernameOrEmail);
+        .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+        .FirstOrDefaultAsync(u => u.Username == model.UsernameOrEmail || u.Email == model.UsernameOrEmail);
 
         if (user == null || !VerifyPassword(user.PasswordHash, user.Salt, model.Password))
         {
@@ -80,9 +80,9 @@ public class AuthService(IConfiguration config, WordWeaverContext context, IMapp
                 await transaction.CommitAsync();
 
                 // login user and return token
-                var login = await Login(new LoginDto { 
-                    UsernameOrEmail = addedUser.Entity.Email, 
-                    Password = model.Password 
+                var login = await Login(new LoginDto {
+                    UsernameOrEmail = addedUser.Entity.Email,
+                    Password = model.Password
                 });
 
                 return new AuthResponse {
@@ -109,27 +109,32 @@ public class AuthService(IConfiguration config, WordWeaverContext context, IMapp
     #region ### Token Generation ###
     public string GenerateAuthToken(User user)
     {
-        var credentials = new SigningCredentials(
-            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"])),
-            SecurityAlgorithms.HmacSha256
-        );
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes(config["Jwt:Key"]);
+        
+        var tokenDescriptor = new SecurityTokenDescriptor {
+            Subject = new ClaimsIdentity(new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),  // Subject (user ID)
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(JwtRegisteredClaimNames.Iss, config["Jwt:Issuer"]),  // Issuer
+                new Claim(JwtRegisteredClaimNames.Aud, config["Jwt:Audience"]),  // Audience
+                new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(DateTime.UtcNow.AddHours(1)).ToUnixTimeSeconds().ToString()),  // Expiration Time
+                new Claim(JwtRegisteredClaimNames.Nbf, new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()),  // Not Before
+                new Claim(JwtRegisteredClaimNames.Iat, new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()),  // Issued At
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),  // JWT ID
+            }
+            .Union(user.UserRoles.Select(ur => new Claim(ClaimTypes.Role, ur.Role?.RoleName)))),  // Add roles
 
-        var claims = new[]
-        {
-            new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            Expires = DateTime.UtcNow.AddSeconds(15),  // Token expiration time
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
 
-        var token = new JwtSecurityToken(
-            config["Jwt:Issuer"],
-            config["Jwt:Audience"],
-            claims,
-            expires: DateTime.Now.AddMinutes(15),
-            signingCredentials: credentials
-        );
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        var tokenString = tokenHandler.WriteToken(token);
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        return tokenString;
     }
 
     #endregion ### Token Generation ###
