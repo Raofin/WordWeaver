@@ -7,6 +7,8 @@ namespace WordWeaver
     {
         public static void RegisterServices(IServiceCollection services)
         {
+            services.AddSingleton<IAppSettingsService, AppSettingsService>();
+
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITokenService, TokenService>();
         }

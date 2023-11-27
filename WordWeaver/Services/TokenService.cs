@@ -10,7 +10,7 @@ using WordWeaver.Data.Entity;
 
 namespace WordWeaver.Services
 {
-    public class TokenService(IHttpContextAccessor httpContextAccessor, IConfiguration config) : ITokenService
+    public class TokenService(IHttpContextAccessor httpContextAccessor, IAppSettingsService appSettings) : ITokenService
     {
         public string ClientIpAddress {
             get {
@@ -20,7 +20,7 @@ namespace WordWeaver.Services
 
         public (string token, DateTime expiresAt) GenerateAuthToken(User user)
         {
-            var key = Encoding.ASCII.GetBytes(config["Jwt:Key"]);
+            var key = Encoding.ASCII.GetBytes(appSettings.JwtKey);
             var expiresAt = DateTime.UtcNow.AddDays(7);
 
             var tokenDescriptor = new SecurityTokenDescriptor {
@@ -29,8 +29,8 @@ namespace WordWeaver.Services
                     new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),  // Subject (user ID)
                     new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                    new Claim(JwtRegisteredClaimNames.Iss, config["Jwt:Issuer"]),  // Issuer
-                    new Claim(JwtRegisteredClaimNames.Aud, config["Jwt:Audience"]),  // Audience
+                    new Claim(JwtRegisteredClaimNames.Iss, appSettings.JwtIssuer),  // Issuer
+                    new Claim(JwtRegisteredClaimNames.Aud, appSettings.JwtAudience),  // Audience
                     new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(expiresAt).ToUnixTimeSeconds().ToString()),  // Expiration Time
                     new Claim(JwtRegisteredClaimNames.Nbf, new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()),  // Not Before
                     new Claim(JwtRegisteredClaimNames.Iat, new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()),  // Issued At
