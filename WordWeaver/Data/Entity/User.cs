@@ -21,7 +21,7 @@ public partial class User
 
     public bool? IsActive { get; set; }
 
-    public virtual ICollection<Token> Tokens { get; set; } = new List<Token>();
+    public virtual ICollection<Login> Logins { get; set; } = new List<Login>();
 
     public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 }

@@ -8,7 +8,7 @@ namespace WordWeaver
         public static void RegisterServices(IServiceCollection services)
         {
             services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<TokenService>();
+            services.AddScoped<ITokenService, TokenService>();
         }
     }
 }

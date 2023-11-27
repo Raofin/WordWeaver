@@ -1,22 +1,16 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net;
-using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using WordWeaver.Data;
 using WordWeaver.Data.Entity;
 using WordWeaver.Helper;
 using WordWeaver.Dtos;
 using AutoMapper;
 
-#pragma warning disable CS8604
-
 namespace WordWeaver.Services.Auth;
 
-public class AuthService(IConfiguration config, WordWeaverContext context, IMapper mapper) : IAuthService
+public class AuthService(WordWeaverContext context, IMapper mapper, ITokenService tokenService) : IAuthService
 {
     #region ### User Login and Registration ###
 
@@ -24,8 +18,8 @@ public class AuthService(IConfiguration config, WordWeaverContext context, IMapp
     {
         // check if user exists
         var user = await context.Users
-        .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
-        .FirstOrDefaultAsync(u => u.Username == model.UsernameOrEmail || u.Email == model.UsernameOrEmail);
+            .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+            .FirstOrDefaultAsync(u => u.Username == model.UsernameOrEmail || u.Email == model.UsernameOrEmail);
 
         if (user == null || !VerifyPassword(user.PasswordHash, user.Salt, model.Password))
         {
@@ -35,10 +29,32 @@ public class AuthService(IConfiguration config, WordWeaverContext context, IMapp
             };
         }
 
+        (string token, DateTime expiresAt) = tokenService.GenerateAuthToken(user);
+
+        try
+        {
+            context.Logins.Add(new Login {
+                UserId = user.UserId,
+                Token = token,
+                IpAddress = tokenService.ClientIpAddress,
+                ExpiresAt = expiresAt
+            });
+
+            context.SaveChanges();
+
+        } catch (Exception ex)
+        {
+            return new AuthResponse {
+                Message = $"Error: {ex.Message}",
+                StatusCode = HttpStatusCode.InternalServerError,
+            };
+        }
+
         return new AuthResponse {
             Message = "Login successful.",
             StatusCode = HttpStatusCode.OK,
-            Token = GenerateAuthToken(user),
+            Token = token,
+            ExpiresAt = expiresAt,
             User = mapper.Map<UserDto>(user),
         };
     }
@@ -89,6 +105,7 @@ public class AuthService(IConfiguration config, WordWeaverContext context, IMapp
                     Message = "User created successfully.",
                     StatusCode = HttpStatusCode.OK,
                     Token = login.Token,
+                    ExpiresAt = login.ExpiresAt,
                     User = login.User,
                 };
 
@@ -105,39 +122,6 @@ public class AuthService(IConfiguration config, WordWeaverContext context, IMapp
     }
 
     #endregion ### User Login and Registration ###
-
-    #region ### Token Generation ###
-    public string GenerateAuthToken(User user)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(config["Jwt:Key"]);
-        
-        var tokenDescriptor = new SecurityTokenDescriptor {
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),  // Subject (user ID)
-                new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Iss, config["Jwt:Issuer"]),  // Issuer
-                new Claim(JwtRegisteredClaimNames.Aud, config["Jwt:Audience"]),  // Audience
-                new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(DateTime.UtcNow.AddHours(1)).ToUnixTimeSeconds().ToString()),  // Expiration Time
-                new Claim(JwtRegisteredClaimNames.Nbf, new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()),  // Not Before
-                new Claim(JwtRegisteredClaimNames.Iat, new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()),  // Issued At
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),  // JWT ID
-            }
-            .Union(user.UserRoles.Select(ur => new Claim(ClaimTypes.Role, ur.Role?.RoleName)))),  // Add roles
-
-            Expires = DateTime.UtcNow.AddSeconds(15),  // Token expiration time
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-        };
-
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        var tokenString = tokenHandler.WriteToken(token);
-
-        return tokenString;
-    }
-
-    #endregion ### Token Generation ###
 
     #region ### Password Hashing ###
 

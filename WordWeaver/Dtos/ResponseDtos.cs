@@ -21,5 +21,6 @@ public class ResponseHelper<T> : CommonResponse
 public class AuthResponse : CommonResponse
 {
     public string? Token { get; set; }
+    public DateTime? ExpiresAt { get; set; }
     public UserDto? User { get; set; }
 }
