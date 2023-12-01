@@ -22,3 +22,11 @@ public class DecodedJwt
     public string? JwtId { get; set; }
     public List<string>? Roles { get; set; }
 }
+
+public class UploadedFile
+{
+    public string Name { get; set; } = null!;
+    public string Extension { get; set; } = null!;
+    public string Size { get; set; } = null!;
+    public DateTime? UploadedAt { get; set; }
+}

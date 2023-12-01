@@ -50,4 +50,20 @@ public class AppSettingsService(IConfiguration configuration) : IAppSettingsServ
     {
         get => configuration.GetValue("SmtpSettings:Password", string.Empty)?.Replace(" ", string.Empty);
     }
+
+    public string B2AppKey {
+        get => configuration.GetValue("BackblazeB2:ApplicationKey", string.Empty);
+    }
+
+    public string B2KeyId {
+        get => configuration.GetValue("BackblazeB2:KeyId", string.Empty);
+    }
+
+    public string B2BucketId {
+        get => configuration.GetValue("BackblazeB2:BucketId", string.Empty);
+    }
+
+    public string B2BucketName {
+        get => configuration.GetValue("BackblazeB2:BucketName", string.Empty);
+    }
 }

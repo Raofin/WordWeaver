@@ -16,6 +16,8 @@ public partial class WordWeaverContext : DbContext
     {
     }
 
+    public virtual DbSet<CloudFile> CloudFiles { get; set; }
+
     public virtual DbSet<Email> Emails { get; set; }
 
     public virtual DbSet<Login> Logins { get; set; }
@@ -33,6 +35,22 @@ public partial class WordWeaverContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<CloudFile>(entity =>
+        {
+            entity.HasKey(e => e.FileId);
+
+            entity.ToTable("CloudFiles", "core", tb => tb.HasTrigger("trgFilesSetUpdateDatetime"));
+
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("(NULL)")
+                .HasColumnType("datetime");
+            entity.Property(e => e.UploadedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.UploadedBy).HasDefaultValue(0L);
+        });
+
         modelBuilder.Entity<Email>(entity =>
         {
             entity.ToTable("Emails", "log");

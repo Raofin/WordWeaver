@@ -11,4 +11,8 @@ public interface IAppSettingsService
     string SmtpPassword { get; }
     int SmtpPort { get; }
     string SmtpUsername { get; }
+    string B2AppKey { get; }
+    string B2KeyId { get; }
+    string B2BucketId { get; }
+    string B2BucketName { get; }
 }

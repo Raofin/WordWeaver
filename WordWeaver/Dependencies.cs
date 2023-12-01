@@ -10,8 +10,9 @@ namespace WordWeaver
             services.AddTransient<IAppSettingsService, AppSettingsService>();
             services.AddTransient<IMailService, MailService>();
 
-            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ICloudService, CloudService>();
             services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IAuthService, AuthService>();
         }
     }
 }
