@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using WordWeaver.Data.Entity;
+using WordWeaver.Dtos;
 using WordWeaver.Services.Core.Interfaces;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
@@ -97,19 +98,5 @@ namespace WordWeaver.Services.Core
                 throw new ArgumentException("Invalid timestamp string");
             }
         }
-    }
-
-    public class DecodedJwt
-    {
-        public string? UserId { get; set; }
-        public string? UniqueName { get; set; }
-        public string? Email { get; set; }
-        public string? Issuer { get; set; }
-        public string? Audience { get; set; }
-        public DateTime? Expiration { get; set; }
-        public DateTime? NotBefore { get; set; }
-        public DateTime? IssuedAt { get; set; }
-        public string? JwtId { get; set; }
-        public List<string>? Roles { get; set; }
     }
 }

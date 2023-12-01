@@ -41,7 +41,6 @@ public partial class WordWeaverContext : DbContext
                 .HasDefaultValueSql("(getutcdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.EmailTo).HasMaxLength(255);
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.Subject).HasMaxLength(255);
         });
 
@@ -71,7 +70,7 @@ public partial class WordWeaverContext : DbContext
 
         modelBuilder.Entity<Otp>(entity =>
         {
-            entity.ToTable("Otps", "auth", tb => tb.HasTrigger("trgOtpsSetUpdateDatetime"));
+            entity.ToTable("Otps", "auth");
 
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getutcdate())")
@@ -79,11 +78,8 @@ public partial class WordWeaverContext : DbContext
             entity.Property(e => e.ExpiresAt)
                 .HasDefaultValueSql("(dateadd(day,(1),getutcdate()))")
                 .HasColumnType("datetime");
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.IsUsed).HasDefaultValue(false);
             entity.Property(e => e.OtpValue).HasMaxLength(50);
-            entity.Property(e => e.UpdatedAt)
-                .HasDefaultValueSql("(NULL)")
-                .HasColumnType("datetime");
         });
 
         modelBuilder.Entity<Role>(entity =>

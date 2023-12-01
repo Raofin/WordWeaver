@@ -1,4 +1,5 @@
 ﻿using WordWeaver.Data.Entity;
+using WordWeaver.Dtos;
 
 namespace WordWeaver.Services.Core.Interfaces
 {

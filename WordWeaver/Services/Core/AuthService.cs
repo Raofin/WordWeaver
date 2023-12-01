@@ -11,7 +11,7 @@ using WordWeaver.Services.Core.Interfaces;
 
 namespace WordWeaver.Services.Core;
 
-public class AuthService(WordWeaverContext context, IMapper mapper, ITokenService tokenService) : IAuthService
+public class AuthService(WordWeaverContext context, IMapper mapper, ITokenService tokenService, IMailService mailService) : IAuthService
 {
     #region ### User Login and Registration ###
 
@@ -71,12 +71,19 @@ public class AuthService(WordWeaverContext context, IMapper mapper, ITokenServic
         {
             try
             {
-                // check if user already exists
-                if (await context.Users.AnyAsync(u => u.Username == model.Username || u.Email == model.Email))
+                if(!await IsUsernameUnique(model.Username))
                 {
-                    return new AuthResponse
-                    {
-                        Message = "Username or Email must be unique.",
+                    return new AuthResponse {
+                        Message = "Username must be unique.",
+                        StatusCode = HttpStatusCode.BadRequest,
+                    };
+                }
+
+                // verify email
+                if (!await VerifyEmail(model.Email, model.Otp))
+                {
+                    return new AuthResponse {
+                        Message = "Email it not verified.",
                         StatusCode = HttpStatusCode.BadRequest,
                     };
                 }
@@ -101,8 +108,33 @@ public class AuthService(WordWeaverContext context, IMapper mapper, ITokenServic
                     UserId = addedUser.Entity.UserId,
                 });
 
+                // update otp record
+                var otpRecord = context.Otps.FirstOrDefault(o => o.Email == model.Email);
+
+                if (otpRecord != null)
+                {
+                    otpRecord.IsUsed = true;
+                    otpRecord.ExpiresAt = DateTime.UtcNow;
+                }
+
+                // save and commit changes
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
+
+                // send welcome email
+                await mailService.SendEmail(new EmailDto {
+                    To = model.Email,
+                    Subject = "WordWeaver Registration Successful",
+                    Body = @$"
+                        <body style='font-family: Arial, sans-serif;'>
+                            <div style='max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;'>
+                                <h2 style='color: #333; text-align: center;'>Registration Successful!</h2>
+                                <p>Hello {model.Username},</p>
+                                <p>Congratulations! Your registration on WordWeaver was successful.</p>
+                                <p>Thank you for becoming a part of our community. If you have any questions, feel free to contact our support team at <a href='mailto:support@wordweaver.com'>support@wordweaver.com</a></p>
+                                <p>Happy blogging!<br>WordWeaver</p>
+                            </div>
+                        </body>"}, 0, false);
 
                 // login user and return token
                 var login = await Login(new LoginDto
@@ -119,7 +151,6 @@ public class AuthService(WordWeaverContext context, IMapper mapper, ITokenServic
                     ExpiresAt = login.ExpiresAt,
                     User = login.User,
                 };
-
             }
             catch (Exception ex)
             {
@@ -134,17 +165,65 @@ public class AuthService(WordWeaverContext context, IMapper mapper, ITokenServic
         }
     }
 
-    public async Task<AuthResponse> SendOtp(string email)
+    #endregion ### User Login and Registration ###
+
+    #region ### OTP ###
+    public async Task<bool> SendOtp(string email)
     {
-        context.Otps.Add(new Otp
+        try
         {
-            Email = email,
-            OtpValue = GenerateOtp(),
-            ExpiresAt = DateTime.UtcNow.AddMinutes(5),
-        });
+            if (await context.Users.AnyAsync(u => u.Email == email))
+            {
+                return false;
+            }
 
-        return null;
+            var otp = GenerateOtp();
 
+            // send otp to email
+            await mailService.SendEmail(new EmailDto {
+                To = email,
+                Subject = "WordWeaver Email Verification",
+                Body = @$"
+                    <body style='font-family: Arial, sans-serif;'>
+                        <div style='max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;'>
+                            <p>Thanks for starting the new WordWeaver account creation process. We want to make sure it's really you. Please enter the following verification code.</p>
+                            <div style='text-align: center; line-height: 25px;'>
+                                <div style='margin-bottom: 5px;'>
+                                    <span>Verification Code</span><br>
+                                    <span style='font-size: 20px; font-weight: 700;'>{otp}</span><br>
+                                    <span>(This code is valid for 5 minutes)</span>
+                                </div>
+                            </div>
+                            <p>If you did not request this OTP, please ignore this email.</p>
+                            <p>Thank you,<br> WordWeaver Team</p>
+                        </div>
+                    </body>"}, 0, false);
+
+            // save otp to database
+            context.Otps.Add(new Otp {
+                Email = email,
+                OtpValue = otp,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(5),
+            });
+
+            await context.SaveChangesAsync();
+
+            return true;
+
+        } catch (Exception ex)
+        {
+            throw new Exception($"Error: {ex.Message}");
+        }
+    }
+
+    public async Task<bool> VerifyEmail(string email, string otp)
+    {
+        return await context.Otps.AnyAsync(o => o.Email == email && o.IsUsed == false && o.OtpValue == otp && o.ExpiresAt > DateTime.UtcNow);
+    }
+
+    public async Task<bool> IsUsernameUnique(string username)
+    {
+        return !await context.Users.AnyAsync(u => u.Username == username);
     }
 
     private string GenerateOtp()
@@ -155,7 +234,7 @@ public class AuthService(WordWeaverContext context, IMapper mapper, ITokenServic
         return otp;
     }
 
-    #endregion ### User Login and Registration ###
+    #endregion ### OTP ###
 
     #region ### Password Hashing ###
 

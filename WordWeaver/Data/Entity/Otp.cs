@@ -11,11 +11,9 @@ public partial class Otp
 
     public string OtpValue { get; set; } = null!;
 
+    public bool? IsUsed { get; set; }
+
     public DateTime? ExpiresAt { get; set; }
 
     public DateTime? CreatedAt { get; set; }
-
-    public DateTime? UpdatedAt { get; set; }
-
-    public bool? IsActive { get; set; }
 }

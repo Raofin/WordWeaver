@@ -18,6 +18,14 @@ public class RegistrationDto
 
     [EmailAddress]
     public string Email { get; set; } = null!;
+    public string Otp { get; set; } = null!;
+}
+
+public class VerifyOtpDto
+{
+    [EmailAddress]
+    public string Email { get; set; } = null!;
+    public string Otp { get; set; } = null!;
 }
 
 public class UserDto

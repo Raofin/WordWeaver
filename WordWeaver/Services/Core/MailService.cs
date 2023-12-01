@@ -1,13 +1,14 @@
 ﻿using System.Net;
 using System.Net.Mail;
 using WordWeaver.Data;
+using WordWeaver.Dtos;
 using WordWeaver.Services.Core.Interfaces;
 
 namespace WordWeaver.Services.Core;
 
 public class MailService(IAppSettingsService appSettings, WordWeaverContext context) : IMailService
 {
-    public async Task<Email> SendEmail(Email email, long userId = 0, bool log = true)
+    public async Task<EmailDto> SendEmail(EmailDto email, long userId = 0, bool log = true)
     {
         try
         {
@@ -69,13 +70,4 @@ public class MailService(IAppSettingsService appSettings, WordWeaverContext cont
             throw new Exception(ex.Message);
         }
     }
-}
-
-public class Email
-{
-    public string To { get; set; } = null!;
-    public string Subject { get; set; } = null!;
-    public string Body { get; set; } = null!;
-    public List<string>? CcRecipients { get; set; }
-    public List<string>? BccRecipients { get; set; }
 }

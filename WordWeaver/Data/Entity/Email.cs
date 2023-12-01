@@ -20,6 +20,4 @@ public partial class Email
     public long? CreatedBy { get; set; }
 
     public DateTime? CreatedAt { get; set; }
-
-    public bool? IsActive { get; set; }
 }

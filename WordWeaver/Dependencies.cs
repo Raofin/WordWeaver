@@ -8,10 +8,10 @@ namespace WordWeaver
         public static void RegisterServices(IServiceCollection services)
         {
             services.AddTransient<IAppSettingsService, AppSettingsService>();
+            services.AddTransient<IMailService, MailService>();
 
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITokenService, TokenService>();
-            services.AddScoped<IMailService, MailService>();
         }
     }
 }
