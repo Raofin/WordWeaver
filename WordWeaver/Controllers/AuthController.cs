@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using WordWeaver.Dtos;
-using WordWeaver.Services.Auth;
+using WordWeaver.Services.Core.Interfaces;
 
 namespace WordWeaver.Controllers
 {

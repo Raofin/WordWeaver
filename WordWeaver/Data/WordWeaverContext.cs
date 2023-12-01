@@ -16,6 +16,8 @@ public partial class WordWeaverContext : DbContext
     {
     }
 
+    public virtual DbSet<Email> Emails { get; set; }
+
     public virtual DbSet<Login> Logins { get; set; }
 
     public virtual DbSet<Otp> Otps { get; set; }
@@ -31,6 +33,18 @@ public partial class WordWeaverContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Email>(entity =>
+        {
+            entity.ToTable("Emails", "log");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.EmailTo).HasMaxLength(255);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.Subject).HasMaxLength(255);
+        });
+
         modelBuilder.Entity<Login>(entity =>
         {
             entity.HasKey(e => e.TokenId).HasName("PK_Tokens");

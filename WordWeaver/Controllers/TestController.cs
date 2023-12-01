@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
-using WordWeaver.Services;
+using WordWeaver.Services.Core;
+using WordWeaver.Services.Core.Interfaces;
 
 namespace WordWeaver.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TestController(TokenService tokenService) : ControllerBase
+    public class TestController(ITokenService tokenService, IMailService mailService) : ControllerBase
     {
         [AllowAnonymous]
         [HttpGet("GetToken")]
@@ -21,6 +20,19 @@ namespace WordWeaver.Controllers
         public IActionResult Post()
         {
             return Ok("OK");
+        }
+
+        [AllowAnonymous]
+        [HttpGet("GetMail")]
+        public async Task<IActionResult> GetMail()
+        {
+            var email = await mailService.SendEmail(new Email() {
+                To = "zaidaminraofin@gmail.com",
+                Subject = "Email subject",
+                Body = "<h1>Hello World</h1>"
+            }, 0, true);
+
+            return Ok(email);
         }
     }
 }

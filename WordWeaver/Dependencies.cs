@@ -1,5 +1,5 @@
-﻿using WordWeaver.Services;
-using WordWeaver.Services.Auth;
+﻿using WordWeaver.Services.Core;
+using WordWeaver.Services.Core.Interfaces;
 
 namespace WordWeaver
 {
@@ -7,10 +7,11 @@ namespace WordWeaver
     {
         public static void RegisterServices(IServiceCollection services)
         {
-            services.AddSingleton<IAppSettingsService, AppSettingsService>();
+            services.AddTransient<IAppSettingsService, AppSettingsService>();
 
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IMailService, MailService>();
         }
     }
 }

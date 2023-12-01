@@ -3,17 +3,20 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using WordWeaver.Data.Entity;
+using WordWeaver.Services.Core.Interfaces;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 #pragma warning disable CS8603 // Possible null reference return.
 #pragma warning disable CS8604 // Possible null reference argument.
 
-namespace WordWeaver.Services
+namespace WordWeaver.Services.Core
 {
     public class TokenService(IHttpContextAccessor httpContextAccessor, IAppSettingsService appSettings) : ITokenService
     {
-        public string ClientIpAddress {
-            get {
+        public string ClientIpAddress
+        {
+            get
+            {
                 return httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
             }
         }
@@ -23,7 +26,8 @@ namespace WordWeaver.Services
             var key = Encoding.ASCII.GetBytes(appSettings.JwtKey);
             var expiresAt = DateTime.UtcNow.AddDays(7);
 
-            var tokenDescriptor = new SecurityTokenDescriptor {
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),  // Subject (user ID)
@@ -60,7 +64,8 @@ namespace WordWeaver.Services
                 var decodedToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
                 var claims = decodedToken?.Claims;
 
-                return new DecodedJwt {
+                return new DecodedJwt
+                {
                     UserId = claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value,
                     UniqueName = claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.UniqueName)?.Value,
                     Email = claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Email)?.Value,
@@ -73,7 +78,8 @@ namespace WordWeaver.Services
                     Roles = claims.Where(c => c.Type == "role").Select(c => c.Value).ToList()
                 };
 
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception("Error decoding JWT token", ex);
             }

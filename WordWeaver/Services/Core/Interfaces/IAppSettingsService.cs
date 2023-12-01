@@ -1,4 +1,4 @@
-﻿namespace WordWeaver.Services;
+﻿namespace WordWeaver.Services.Core.Interfaces;
 
 public interface IAppSettingsService
 {

@@ -7,8 +7,9 @@ using WordWeaver.Data.Entity;
 using WordWeaver.Helper;
 using WordWeaver.Dtos;
 using AutoMapper;
+using WordWeaver.Services.Core.Interfaces;
 
-namespace WordWeaver.Services.Auth;
+namespace WordWeaver.Services.Core;
 
 public class AuthService(WordWeaverContext context, IMapper mapper, ITokenService tokenService) : IAuthService
 {
@@ -23,7 +24,8 @@ public class AuthService(WordWeaverContext context, IMapper mapper, ITokenServic
 
         if (user == null || !VerifyPassword(user.PasswordHash, user.Salt, model.Password))
         {
-            return new AuthResponse {
+            return new AuthResponse
+            {
                 Message = "Invalid username or email.",
                 StatusCode = HttpStatusCode.BadRequest,
             };
@@ -33,7 +35,8 @@ public class AuthService(WordWeaverContext context, IMapper mapper, ITokenServic
 
         try
         {
-            context.Logins.Add(new Login {
+            context.Logins.Add(new Login
+            {
                 UserId = user.UserId,
                 Token = token,
                 IpAddress = tokenService.ClientIpAddress,
@@ -42,15 +45,18 @@ public class AuthService(WordWeaverContext context, IMapper mapper, ITokenServic
 
             context.SaveChanges();
 
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
-            return new AuthResponse {
+            return new AuthResponse
+            {
                 Message = $"Error: {ex.Message}",
                 StatusCode = HttpStatusCode.InternalServerError,
             };
         }
 
-        return new AuthResponse {
+        return new AuthResponse
+        {
             Message = "Login successful.",
             StatusCode = HttpStatusCode.OK,
             Token = token,
@@ -68,7 +74,8 @@ public class AuthService(WordWeaverContext context, IMapper mapper, ITokenServic
                 // check if user already exists
                 if (await context.Users.AnyAsync(u => u.Username == model.Username || u.Email == model.Email))
                 {
-                    return new AuthResponse {
+                    return new AuthResponse
+                    {
                         Message = "Username or Email must be unique.",
                         StatusCode = HttpStatusCode.BadRequest,
                     };
@@ -78,7 +85,8 @@ public class AuthService(WordWeaverContext context, IMapper mapper, ITokenServic
                 (string hashedPassword, string salt) = HashPasswordWithSalt(model.Password);
 
                 // create user, role and save to database
-                var addedUser = await context.Users.AddAsync(new User {
+                var addedUser = await context.Users.AddAsync(new User
+                {
                     Username = model.Username,
                     Email = model.Email,
                     PasswordHash = hashedPassword,
@@ -87,7 +95,8 @@ public class AuthService(WordWeaverContext context, IMapper mapper, ITokenServic
 
                 await context.SaveChangesAsync();
 
-                await context.UserRoles.AddAsync(new UserRole {
+                await context.UserRoles.AddAsync(new UserRole
+                {
                     RoleId = (int)Roles.User,
                     UserId = addedUser.Entity.UserId,
                 });
@@ -96,12 +105,14 @@ public class AuthService(WordWeaverContext context, IMapper mapper, ITokenServic
                 await transaction.CommitAsync();
 
                 // login user and return token
-                var login = await Login(new LoginDto {
+                var login = await Login(new LoginDto
+                {
                     UsernameOrEmail = addedUser.Entity.Email,
                     Password = model.Password
                 });
 
-                return new AuthResponse {
+                return new AuthResponse
+                {
                     Message = "User created successfully.",
                     StatusCode = HttpStatusCode.OK,
                     Token = login.Token,
@@ -109,16 +120,39 @@ public class AuthService(WordWeaverContext context, IMapper mapper, ITokenServic
                     User = login.User,
                 };
 
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
 
-                return new AuthResponse {
+                return new AuthResponse
+                {
                     Message = $"Error: {ex.Message}",
                     StatusCode = HttpStatusCode.InternalServerError,
                 };
             }
         }
+    }
+
+    public async Task<AuthResponse> SendOtp(string email)
+    {
+        context.Otps.Add(new Otp
+        {
+            Email = email,
+            OtpValue = GenerateOtp(),
+            ExpiresAt = DateTime.UtcNow.AddMinutes(5),
+        });
+
+        return null;
+
+    }
+
+    private string GenerateOtp()
+    {
+        var random = new Random();
+        var otp = random.Next(1000, 9999).ToString();
+
+        return otp;
     }
 
     #endregion ### User Login and Registration ###

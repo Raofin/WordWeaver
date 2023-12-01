@@ -1,6 +1,6 @@
 ﻿using WordWeaver.Dtos;
 
-namespace WordWeaver.Services.Auth
+namespace WordWeaver.Services.Core.Interfaces
 {
     public interface IAuthService
     {
