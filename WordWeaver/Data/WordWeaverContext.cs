@@ -140,7 +140,7 @@ public partial class WordWeaverContext : DbContext
 
         modelBuilder.Entity<Post>(entity =>
         {
-            entity.HasKey(e => e.BlogId).HasName("PK_Blogs");
+            entity.HasKey(e => e.PostId).HasName("PK_Blogs");
 
             entity.ToTable("Posts", "blog", tb =>
                 {
@@ -151,6 +151,7 @@ public partial class WordWeaverContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getutcdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.Description).HasMaxLength(255);
             entity.Property(e => e.FileIds)
                 .HasMaxLength(255)
                 .HasComment("Medias");
@@ -160,11 +161,6 @@ public partial class WordWeaverContext : DbContext
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(NULL)")
                 .HasColumnType("datetime");
-
-            entity.HasOne(d => d.User).WithMany(p => p.Posts)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("FK_Blogs_Users");
         });
 
         modelBuilder.Entity<React>(entity =>

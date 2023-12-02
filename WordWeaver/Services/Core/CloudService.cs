@@ -10,7 +10,7 @@ namespace WordWeaver.Services.Core;
 
 public class CloudService(IAppSettingsService appSettings, WordWeaverContext context) : ICloudService
 {
-    public async Task<ResponseHelper<List<CloudFile>>> GetFiles(string searchQuery = "")
+    public async Task<ResponseHelper<List<CloudFile>>> GetFilesList(string searchQuery = "")
     {
         try
         {

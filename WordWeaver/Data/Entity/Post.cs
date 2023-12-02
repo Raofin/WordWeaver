@@ -5,13 +5,15 @@ namespace WordWeaver.Data.Entity;
 
 public partial class Post
 {
-    public long BlogId { get; set; }
+    public long PostId { get; set; }
 
     public long? UserId { get; set; }
 
-    public string Text { get; set; } = null!;
-
     public string Title { get; set; } = null!;
+
+    public string Description { get; set; } = null!;
+
+    public string Text { get; set; } = null!;
 
     /// <summary>
     /// Medias
@@ -29,8 +31,6 @@ public partial class Post
     public virtual ICollection<React> Reacts { get; set; } = new List<React>();
 
     public virtual ICollection<Tag> Tags { get; set; } = new List<Tag>();
-
-    public virtual User? User { get; set; }
 
     public virtual ICollection<View> Views { get; set; } = new List<View>();
 }

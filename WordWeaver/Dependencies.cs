@@ -13,6 +13,7 @@ namespace WordWeaver
             services.AddScoped<ICloudService, CloudService>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IBlogService, BlogService>();
         }
     }
 }

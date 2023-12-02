@@ -30,3 +30,12 @@ public class UploadedFile
     public string Size { get; set; } = null!;
     public DateTime? UploadedAt { get; set; }
 }
+
+public class PagedResult<T>
+{
+    public List<T>? Data { get; set; }
+    public int PageIndex { get; set; }
+    public int PageSize { get; set; }
+    public int TotalItems { get; set; }
+    public int TotalPages { get; set; }
+}

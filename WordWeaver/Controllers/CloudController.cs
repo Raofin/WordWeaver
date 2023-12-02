@@ -13,7 +13,7 @@ public class CloudController(ICloudService cloudService) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetFiles(string searchQuery = "")
     {
-        var response = await cloudService.GetFiles(searchQuery);
+        var response = await cloudService.GetFilesList(searchQuery);
         return response.StatusCode == HttpStatusCode.OK
             ? Ok(response.Data)
             : BadRequest(response);

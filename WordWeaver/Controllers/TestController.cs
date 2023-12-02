@@ -1,15 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WordWeaver.Dtos;
+using WordWeaver.Extensions;
 using WordWeaver.Services.Core.Interfaces;
 
 namespace WordWeaver.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
+    [Route("api/[controller]")]
     public class TestController(ITokenService tokenService, IMailService mailService, IAuthService authService) : ControllerBase
     {
-        [AllowAnonymous]
         [HttpGet("GetToken")]
         public IActionResult Get()
         {
@@ -22,7 +23,6 @@ namespace WordWeaver.Controllers
             return Ok("OK");
         }
 
-        [AllowAnonymous]
         [HttpGet("GetMail")]
         public async Task<IActionResult> GetMail()
         {
@@ -35,13 +35,31 @@ namespace WordWeaver.Controllers
             return Ok(email);
         }
 
-        [AllowAnonymous]
         [HttpPost("username")]
         public async Task<IActionResult> Adwdqaw(string username)
         {
             var bol = await authService.IsUsernameUnique(username);
 
             return Ok(bol);
+        }
+
+        [HttpGet("TestString")]
+        public IActionResult TestString()
+        {
+            try
+            {
+                string commaSeparatedString = "10,20,30,40";
+                List<long> longValues = commaSeparatedString.ToLongList();
+
+                var str = longValues.ToCommaSeparatedString();
+                return Ok(str);
+
+
+            } catch (Exception ex)
+            {
+                return Ok(ex.Message);
+            }
+
         }
     }
 }
