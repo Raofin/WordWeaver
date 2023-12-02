@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace WordWeaver.Data.Entity;
 
+/// <summary>
+/// Uploaded By
+/// </summary>
 public partial class CloudFile
 {
     public long FileId { get; set; }
@@ -15,9 +18,11 @@ public partial class CloudFile
 
     public DateTime? UploadedAt { get; set; }
 
-    public long? UploadedBy { get; set; }
+    public long? UserId { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
 
     public bool? IsActive { get; set; }
+
+    public virtual User? User { get; set; }
 }

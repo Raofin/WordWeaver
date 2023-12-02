@@ -1,4 +1,5 @@
 ﻿using B2Net;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 using WordWeaver.Data;
 using WordWeaver.Data.Entity;
@@ -9,7 +10,30 @@ namespace WordWeaver.Services.Core;
 
 public class CloudService(IAppSettingsService appSettings, WordWeaverContext context) : ICloudService
 {
-    public async Task<ResponseHelper<CloudFile>> UploadFile(IFormFile file, long uploadedBy = 0, string? filename = null)
+    public async Task<ResponseHelper<List<CloudFile>>> GetFiles(string searchQuery = "")
+    {
+        try
+        {
+            var cloudFiles = await context.CloudFiles
+                .Where(x => x.IsActive == true && (string.IsNullOrEmpty(searchQuery) || x.Name.Contains(searchQuery) || x.Extension.Contains(searchQuery)))
+                .ToListAsync();
+
+            return new ResponseHelper<List<CloudFile>> {
+                Message = "Files list retrieved successfully",
+                StatusCode = HttpStatusCode.OK,
+                Data = cloudFiles
+            };
+
+        } catch (Exception ex)
+        {
+            return new ResponseHelper<List<CloudFile>> {
+                Message = ex.Message,
+                StatusCode = HttpStatusCode.InternalServerError
+            };
+        }
+    }
+
+    public async Task<ResponseHelper<CloudFile>> UploadFile(IFormFile file, long? userId = null, string? filename = null)
     {
         using (var memoryStream = new MemoryStream())
         {
@@ -30,9 +54,9 @@ public class CloudService(IAppSettingsService appSettings, WordWeaverContext con
                     Extension = Path.GetExtension(file.FileName),
                     Size = results.ContentLength,
                     UploadedAt = results.UploadTimestampDate,
-                    UploadedBy = uploadedBy
+                    UserId = userId
                 };
-                
+
                 await context.CloudFiles.AddAsync(cloudFile);
                 await context.SaveChangesAsync();
 
@@ -52,7 +76,7 @@ public class CloudService(IAppSettingsService appSettings, WordWeaverContext con
         }
     }
 
-    public async Task<ResponseHelper<List<CloudFile>>> UploadFiles(IFormFileCollection files, long uploadedBy = 0)
+    public async Task<ResponseHelper<List<CloudFile>>> UploadFiles(IFormFileCollection files, long? userId = null)
     {
         using (var memoryStream = new MemoryStream())
         {
@@ -76,7 +100,7 @@ public class CloudService(IAppSettingsService appSettings, WordWeaverContext con
                         Extension = Path.GetExtension(file.FileName),
                         Size = results.ContentLength,
                         UploadedAt = results.UploadTimestampDate,
-                        UploadedBy = uploadedBy
+                        UserId = userId
                     };
 
                     cloudFiles.Add(cloudFile);
@@ -100,12 +124,37 @@ public class CloudService(IAppSettingsService appSettings, WordWeaverContext con
         }
     }
 
-
     public async Task<byte[]> DownloadFile(string filename)
     {
         var client = new B2Client(appSettings.B2KeyId, appSettings.B2AppKey);
         var fileByte = await client.Files.DownloadByName(filename, appSettings.B2BucketName);
 
         return fileByte.FileData;
+    }
+
+    public async Task<ResponseHelper> DeleteFile(long fileId)
+    {
+        try
+        {
+            var cloudFile = await context.CloudFiles.Where(x => x.FileId == fileId).FirstOrDefaultAsync();
+
+            if (cloudFile != null)
+            {
+                cloudFile.IsActive = false;
+                await context.SaveChangesAsync();
+            }
+
+            return new ResponseHelper {
+                Message = "File deleted successfully",
+                StatusCode = HttpStatusCode.OK
+            };
+
+        } catch (Exception ex)
+        {
+            return new ResponseHelper {
+                Message = ex.Message,
+                StatusCode = HttpStatusCode.InternalServerError
+            };
+        }
     }
 }

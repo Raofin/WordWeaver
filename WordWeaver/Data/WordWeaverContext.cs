@@ -39,7 +39,11 @@ public partial class WordWeaverContext : DbContext
         {
             entity.HasKey(e => e.FileId);
 
-            entity.ToTable("CloudFiles", "core", tb => tb.HasTrigger("trgFilesSetUpdateDatetime"));
+            entity.ToTable("CloudFiles", "core", tb =>
+                {
+                    tb.HasComment("Uploaded By");
+                    tb.HasTrigger("trgCloudFilesSetUpdateDatetime");
+                });
 
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.UpdatedAt)
@@ -48,7 +52,11 @@ public partial class WordWeaverContext : DbContext
             entity.Property(e => e.UploadedAt)
                 .HasDefaultValueSql("(getutcdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.UploadedBy).HasDefaultValue(0L);
+            entity.Property(e => e.UserId).HasDefaultValueSql("(NULL)");
+
+            entity.HasOne(d => d.User).WithMany(p => p.CloudFiles)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_CloudFiles_Users");
         });
 
         modelBuilder.Entity<Email>(entity =>
