@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Net;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WordWeaver.Services.Core.Interfaces;
 
@@ -12,7 +13,22 @@ namespace WordWeaver.Controllers
         [HttpPost("UploadFile")]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
-            return Ok(await cloudService.UploadFile(file));
+            var response = await cloudService.UploadFile(file);
+
+            return response.StatusCode == HttpStatusCode.OK
+                ? Ok(response.Data) 
+                : BadRequest(response);
+
+        }
+
+        [HttpPost("UploadFiles")]
+        public async Task<IActionResult> UploadFiles(IFormFileCollection files)
+        {
+            var response = await cloudService.UploadFiles(files);
+
+            return response.StatusCode == HttpStatusCode.OK
+                ? Ok(response.Data)
+                : BadRequest(response);
         }
 
         [HttpGet("DownloadFile")]

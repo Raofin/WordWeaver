@@ -52,6 +52,55 @@ public class CloudService(IAppSettingsService appSettings, WordWeaverContext con
         }
     }
 
+    public async Task<ResponseHelper<List<CloudFile>>> UploadFiles(IFormFileCollection files, long uploadedBy = 0)
+    {
+        using (var memoryStream = new MemoryStream())
+        {
+            try
+            {
+                var cloudFiles = new List<CloudFile>();
+
+                foreach (var file in files)
+                {
+                    var guid = Guid.NewGuid().ToString()[..6];
+                    var filename = guid + "_" + file.FileName.Trim();
+
+                    file.CopyTo(memoryStream);
+
+                    var client = new B2Client(appSettings.B2KeyId, appSettings.B2AppKey);
+                    var fileBytes = memoryStream.ToArray();
+                    var results = await client.Files.Upload(fileBytes, filename, appSettings.B2BucketId);
+
+                    var cloudFile = new CloudFile {
+                        Name = results.FileName,
+                        Extension = Path.GetExtension(file.FileName),
+                        Size = results.ContentLength,
+                        UploadedAt = results.UploadTimestampDate,
+                        UploadedBy = uploadedBy
+                    };
+
+                    cloudFiles.Add(cloudFile);
+                }
+
+                await context.CloudFiles.AddRangeAsync(cloudFiles);
+                await context.SaveChangesAsync();
+
+                return new ResponseHelper<List<CloudFile>> {
+                    Message = "Files uploaded successfully",
+                    StatusCode = HttpStatusCode.OK,
+                    Data = cloudFiles
+                };
+            } catch (Exception ex)
+            {
+                return new ResponseHelper<List<CloudFile>> {
+                    Message = ex.Message,
+                    StatusCode = HttpStatusCode.InternalServerError
+                };
+            }
+        }
+    }
+
+
     public async Task<byte[]> DownloadFile(string filename)
     {
         var client = new B2Client(appSettings.B2KeyId, appSettings.B2AppKey);
