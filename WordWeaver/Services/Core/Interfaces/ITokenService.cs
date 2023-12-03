@@ -1,14 +1,18 @@
 ﻿using WordWeaver.Data.Entity;
 using WordWeaver.Dtos;
 
-namespace WordWeaver.Services.Core.Interfaces
+namespace WordWeaver.Services.Core.Interfaces;
+
+public interface ITokenService
 {
-    public interface ITokenService
-    {
-        string ClientIpAddress { get; }
+    (string token, DateTime expiresAt) GenerateAuthToken(User user);
 
-        (string token, DateTime expiresAt) GenerateAuthToken(User user);
+    DecodedJwt DecodeJwt();
+}
 
-        DecodedJwt DecodeJwt();
-    }
+public interface IAuthenticatedUser
+{
+    string? ClientIpAddress { get; }
+
+    long? UserId { get; }
 }

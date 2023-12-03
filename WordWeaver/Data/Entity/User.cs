@@ -25,6 +25,8 @@ public partial class User
 
     public virtual ICollection<Login> Logins { get; set; } = new List<Login>();
 
+    public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
+
     public virtual ICollection<React> Reacts { get; set; } = new List<React>();
 
     public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();

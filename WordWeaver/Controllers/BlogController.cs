@@ -6,11 +6,11 @@ using WordWeaver.Services.Core.Interfaces;
 
 namespace WordWeaver.Controllers
 {
-    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class BlogController(IBlogService blogService) : ControllerBase
     {
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetPosts(string? searchQuery, int pageIndex = 1, int pageSize = 10)
         {
@@ -21,6 +21,7 @@ namespace WordWeaver.Controllers
                 : BadRequest(response);
         }
 
+        [AllowAnonymous]
         [HttpGet("{postId}")]
         public async Task<IActionResult> GetBlog(long postId)
         {

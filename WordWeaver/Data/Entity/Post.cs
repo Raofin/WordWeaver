@@ -32,5 +32,7 @@ public partial class Post
 
     public virtual ICollection<Tag> Tags { get; set; } = new List<Tag>();
 
+    public virtual User? User { get; set; }
+
     public virtual ICollection<View> Views { get; set; } = new List<View>();
 }

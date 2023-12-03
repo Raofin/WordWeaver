@@ -161,6 +161,11 @@ public partial class WordWeaverContext : DbContext
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(NULL)")
                 .HasColumnType("datetime");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Posts)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Posts_Users");
         });
 
         modelBuilder.Entity<React>(entity =>

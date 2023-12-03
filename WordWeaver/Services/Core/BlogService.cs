@@ -9,13 +9,14 @@ using WordWeaver.Services.Core.Interfaces;
 
 namespace WordWeaver.Services.Core;
 
-public class BlogService(WordWeaverContext context, IMapper mapper) : IBlogService
+public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticatedUser authenticatedUser) : IBlogService
 {
     public async Task<ResponseHelper> CreatePost(PostDto createPostDto)
     {
         try
         {
             var post = mapper.Map<Post>(createPostDto);
+            post.UserId = authenticatedUser.UserId;
 
             await context.Posts.AddAsync(post);
             await context.SaveChangesAsync();

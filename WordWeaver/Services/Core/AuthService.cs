@@ -11,7 +11,7 @@ using WordWeaver.Services.Core.Interfaces;
 
 namespace WordWeaver.Services.Core;
 
-public class AuthService(WordWeaverContext context, IMapper mapper, ITokenService tokenService, IMailService mailService) : IAuthService
+public class AuthService(WordWeaverContext context, IMapper mapper, ITokenService tokenService, IAuthenticatedUser authUser, IMailService mailService) : IAuthService
 {
     #region ### User Login and Registration ###
 
@@ -39,7 +39,7 @@ public class AuthService(WordWeaverContext context, IMapper mapper, ITokenServic
             {
                 UserId = user.UserId,
                 Token = token,
-                IpAddress = tokenService.ClientIpAddress,
+                IpAddress = authUser.ClientIpAddress,
                 ExpiresAt = expiresAt
             });
 
