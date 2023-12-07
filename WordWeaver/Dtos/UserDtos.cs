@@ -143,6 +143,10 @@ public class SocialDto
     public string? SocialName { get; set; }
 
     public string? SocialUrl { get; set; }
+
+    public string? Description { get; set; }
+
+    public bool? IsActive { get; set; }
 }
 
 #endregion ### User Detail Dtos ###

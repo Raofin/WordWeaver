@@ -24,12 +24,9 @@ public class UserController(IUserService userService) : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> SaveUserDetails([FromForm] MultipartFormData<UserDetailsDto> data)
     {
-        var dto = data.Json;
-        var avatar = data.File;
-
         if (ModelState.IsValid)
         {
-            var response = await userService.SaveUserDetails(dto);
+            var response = await userService.SaveUserDetails(data.Json, data.File);
 
             return response.StatusCode == HttpStatusCode.OK
                 ? Ok(response)

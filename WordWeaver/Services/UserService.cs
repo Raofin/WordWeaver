@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using System.Net;
 using WordWeaver.Data;
 using WordWeaver.Data.Entity;
@@ -9,7 +8,7 @@ using WordWeaver.Services.Interfaces;
 
 namespace WordWeaver.Services;
 
-public class UserService(WordWeaverContext context, IAuthenticatedUser authenticatedUser, ILoggerService log) : IUserService
+public class UserService(WordWeaverContext context, IAuthenticatedUser authenticatedUser, ILoggerService log, ICloudService cloudService) : IUserService
 {
     public async Task<ResponseHelper<ProfileDto>> GetProfile()
     {
@@ -68,7 +67,7 @@ public class UserService(WordWeaverContext context, IAuthenticatedUser authentic
         }
     }
 
-    public async Task<ResponseHelper> SaveUserDetails(UserDetailsDto dto)
+    public async Task<ResponseHelper> SaveUserDetails(UserDetailsDto dto, IFormFile? avatarFile)
     {
         try
         {
@@ -84,12 +83,51 @@ public class UserService(WordWeaverContext context, IAuthenticatedUser authentic
                 extData.Country = dto.Country ?? extData.Country;
                 extData.Website = dto.Website ?? extData.Website;
                 extData.Phone = dto.Phone ?? extData.Phone;
-                //extData.AvatarFileId = dto.AvatarFileId ?? extData.AvatarFileId;
                 extData.IsActive = dto.IsActive.HasValue ? dto.IsActive : extData.IsActive;
+
+                // Update avatar
+                if (avatarFile != null)
+                {
+                    var uploadedFile = await cloudService.UploadFile(avatarFile, userId);
+
+                    if (extData.AvatarFileId > 0)
+                    {
+                        await cloudService.DeleteFile(extData.AvatarFileId.Value);
+                    }
+
+                    extData.AvatarFileId = uploadedFile?.Data?.FileId;
+                }
+
+                // Update socials
+                if (dto.Socials != null && dto.Socials.Count != 0)
+                {
+                    foreach (var socialDto in dto.Socials)
+                    {
+                        var extSocial = context.Socials.FirstOrDefault(s => s.SocialId == socialDto.SocialId);
+
+                        if (extSocial != null)
+                        {
+                            // Update existing social
+                            extSocial.SocialName = socialDto.SocialName ?? extSocial.SocialName;
+                            extSocial.SocialUrl = socialDto.SocialUrl ?? extSocial.SocialUrl;
+                            extSocial.Description = socialDto.Description ?? extSocial.Description;
+                        }
+                        else
+                        {
+                            // Add new social
+                            await context.Socials.AddAsync(new Social {
+                                UserId = userId,
+                                SocialName = socialDto.SocialName,
+                                SocialUrl = socialDto.SocialUrl,
+                                Description = socialDto.Description,
+                            });
+                        }
+                    }
+                }
 
                 await context.SaveChangesAsync();
 
-                response.Id = extData.ProfileId;
+                response.Id = extData?.ProfileId;
                 response.Message = "Profile updated successfully";
             }
             else // create
@@ -102,11 +140,31 @@ public class UserService(WordWeaverContext context, IAuthenticatedUser authentic
                     Country = dto.Country,
                     Website = dto.Website,
                     Phone = dto.Phone,
-                    //AvatarFileId = dto.AvatarFileId,
-                    IsActive = true
                 };
 
+                // Upload avatar
+                if (avatarFile != null)
+                {
+                    var uploadedFile = await cloudService.UploadFile(avatarFile, userId);
+
+                    data.AvatarFileId = uploadedFile?.Data?.FileId;
+                }
+
                 await context.UserDetails.AddAsync(data);
+
+                // Add socials
+                if (dto.Socials != null && dto.Socials.Count != 0)
+                {
+                    var socials = dto.Socials.Select(s => new Social {
+                        UserId = userId,
+                        SocialName = s.SocialName,
+                        SocialUrl = s.SocialUrl,
+                        Description = s.Description,
+                    });
+
+                    await context.AddRangeAsync(socials);
+                }
+
                 await context.SaveChangesAsync();
 
                 response.Id = data.ProfileId;
