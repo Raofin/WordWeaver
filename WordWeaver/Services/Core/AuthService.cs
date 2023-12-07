@@ -39,7 +39,7 @@ public class AuthService(WordWeaverContext context, IMapper mapper, ITokenServic
             {
                 UserId = user.UserId,
                 Token = token,
-                IpAddress = authUser.ClientIpAddress,
+                IpAddress = authUser.IpAddress,
                 ExpiresAt = expiresAt
             });
 

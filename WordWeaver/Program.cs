@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -7,12 +8,14 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using WordWeaver;
 using WordWeaver.Data;
+using WordWeaver.Services.Core.Interfaces;
 
 #pragma warning disable CS8604
 
 var builder = WebApplication.CreateBuilder(args);
 
 Dependencies.RegisterServices(builder.Services);
+
 
 builder.Services.AddControllers(options => {
     options.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()));
@@ -86,6 +89,27 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 var app = builder.Build();
+
+// Configure exception handling middleware.
+app.UseExceptionHandler(errorApp => {
+    errorApp.Run(async context => {
+        // Retrieve exception details
+        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+        var exception = exceptionHandlerPathFeature?.Error;
+
+        // Log the exception
+        var errorLogger = context.RequestServices.GetRequiredService<ILoggerService>();
+        await errorLogger.Error(exception, false);
+
+        // Set response content type to plain text
+        context.Response.ContentType = "text/plain";
+
+        // Write response body with exception and headers
+        var msg = $"Error: {exception.Message}\n\n";
+        var headers = context.Request.Headers.Select(header => $"{header.Key}: {header.Value}");
+        await context.Response.WriteAsync($"{msg}{exception}\n\nHEADERS\n=======\n{string.Join("\n", headers)}");
+    });
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

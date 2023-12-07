@@ -6,11 +6,11 @@ using WordWeaver.Services.Core.Interfaces;
 
 namespace WordWeaver.Controllers
 {
+    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class BlogController(IBlogService blogService) : ControllerBase
     {
-        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetPosts(string? searchQuery, int pageIndex = 1, int pageSize = 10)
         {
@@ -21,7 +21,6 @@ namespace WordWeaver.Controllers
                 : BadRequest(response);
         }
 
-        [AllowAnonymous]
         [HttpGet("{postId}")]
         public async Task<IActionResult> GetBlog(long postId)
         {
@@ -32,6 +31,7 @@ namespace WordWeaver.Controllers
                 : BadRequest(response);
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateBlog(PostDto createPostDto)
         {
@@ -47,6 +47,7 @@ namespace WordWeaver.Controllers
             return BadRequest(ModelState);
         }
 
+        [Authorize]
         [HttpPut]
         public async Task<IActionResult> UpdateBlog(UpdatePostDto updatePostDto)
         {
@@ -62,6 +63,7 @@ namespace WordWeaver.Controllers
             return BadRequest(ModelState);
         }
 
+        [Authorize]
         [HttpDelete("{postId}")]
         public async Task<IActionResult> DeleteBlog(long postId)
         {
@@ -71,5 +73,11 @@ namespace WordWeaver.Controllers
                 ? Ok(response)
                 : BadRequest(response);
         }
+
+        /*[HttpPost("TrackView")]
+        public async Task<IActionResult> TrackPostView(long postId)
+        {
+            await blogService.TrackPostView(postId);
+        }*/
     }
 }

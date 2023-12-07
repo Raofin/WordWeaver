@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using WordWeaver.Services.Core;
+﻿using WordWeaver.Services.Core;
 using WordWeaver.Services.Core.Interfaces;
 
 namespace WordWeaver;
@@ -15,6 +14,7 @@ public class Dependencies
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthenticatedUser, TokenService>();
         services.AddScoped<ICloudService, CloudService>();
+        services.AddScoped<ILoggerService, LoggerService>();
 
         services.AddScoped<IBlogService, BlogService>();
 

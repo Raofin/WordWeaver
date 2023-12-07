@@ -9,8 +9,10 @@ using WordWeaver.Services.Core.Interfaces;
 
 namespace WordWeaver.Services.Core;
 
-public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticatedUser authenticatedUser) : IBlogService
+public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticatedUser authenticatedUser, ILoggerService log) : IBlogService
 {
+    #region ### Blog Post CRUD ###
+
     public async Task<ResponseHelper> CreatePost(PostDto createPostDto)
     {
         try
@@ -178,4 +180,33 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
             };
         }
     }
+
+    #endregion ### Blog Post CRUD ###
+
+    #region ### Post Views ###
+
+    public async Task TrackPostView(long postId)
+    {
+        try
+        {
+            if (!await context.Posts.AnyAsync(x => x.PostId == postId && x.IsActive == true))
+            {
+                return;
+            }
+
+            var view = new View {
+                PostId = postId,
+                UserId = authenticatedUser.UserId,
+                IpAddress = authenticatedUser.IpAddress,
+            };
+
+            await context.SaveChangesAsync();
+
+        } catch (Exception ex)
+        {
+            await log.Error(ex);
+        }
+    }
+
+    #endregion ### Post Views ###
 }

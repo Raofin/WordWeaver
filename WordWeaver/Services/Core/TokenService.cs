@@ -94,7 +94,7 @@ public class TokenService(IHttpContextAccessor httpContextAccessor, IAppSettings
 
     #region ### IAuthenticatedUser ###
 
-    public string ClientIpAddress {
+    public string IpAddress {
         get {
             try
             {
@@ -106,7 +106,7 @@ public class TokenService(IHttpContextAccessor httpContextAccessor, IAppSettings
         }
     }
 
-    public long? UserId {
+    public long UserId {
         get {
 
             try
@@ -121,6 +121,40 @@ public class TokenService(IHttpContextAccessor httpContextAccessor, IAppSettings
                 var userId = claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
 
                 return long.Parse(userId);
+
+            } catch (Exception ex)
+            {
+                throw new Exception("Invalid authorization.", ex);
+            }
+        }
+    }
+
+    public long? UserIdNullable {
+        get {
+
+            try
+            {
+                var authorizationHeader = httpContextAccessor.HttpContext.Request.Headers.Authorization.ToString();
+                
+                if (string.IsNullOrEmpty(authorizationHeader))
+                {
+                    return null;
+                }
+
+                var token = authorizationHeader.Replace("Bearer ", "");
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var decodedToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
+                var claims = decodedToken?.Claims;
+
+                var userIdClaim = claims?.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub);
+
+                if (userIdClaim == null || !long.TryParse(userIdClaim.Value, out var userId))
+                {
+                    return null;
+                }
+
+                return userId;
 
             } catch (Exception ex)
             {

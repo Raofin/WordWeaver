@@ -9,7 +9,7 @@ namespace WordWeaver.Controllers
     [ApiController]
     [AllowAnonymous]
     [Route("api/[controller]")]
-    public class TestController(ITokenService tokenService, IMailService mailService, IAuthService authService) : ControllerBase
+    public class TestController(ITokenService tokenService, IMailService mailService, IAuthService authService, ILoggerService log) : ControllerBase
     {
         [HttpGet("GetToken")]
         public IActionResult Get()
@@ -44,20 +44,19 @@ namespace WordWeaver.Controllers
         }
 
         [HttpGet("TestString")]
-        public IActionResult TestString()
+        public async Task<IActionResult> TestStringAsync()
         {
             try
             {
-                string commaSeparatedString = "10,20,30,40";
+                string commaSeparatedString = "10q,20,30,40";
                 List<long> longValues = commaSeparatedString.ToLongList();
 
                 var str = longValues.ToCommaSeparatedString();
                 return Ok(str);
 
-
             } catch (Exception ex)
             {
-                return Ok(ex.Message);
+                return Ok(await log.Error(ex));
             }
 
         }

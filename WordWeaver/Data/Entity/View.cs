@@ -9,13 +9,13 @@ public partial class View
 
     public long? UserId { get; set; }
 
-    public long? BlogId { get; set; }
-
-    public DateTime? ViewedAt { get; set; }
+    public long? PostId { get; set; }
 
     public string? IpAddress { get; set; }
 
-    public virtual Post? Blog { get; set; }
+    public DateTime? ViewedAt { get; set; }
+
+    public virtual Post? Post { get; set; }
 
     public virtual User? User { get; set; }
 }

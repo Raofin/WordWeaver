@@ -1,5 +1,4 @@
-﻿
-using WordWeaver.Dtos;
+﻿using WordWeaver.Dtos;
 
 namespace WordWeaver.Services.Core.Interfaces;
 
@@ -14,4 +13,6 @@ public interface IBlogService
     Task<ResponseHelper<PostDto>> GetPost(long postId);
     
     Task<ResponseHelper<PagedResult<PostPreviewDto>>> GetPosts(string? searchQuery, int pageIndex = 1, int pageSize = 10);
+
+    Task TrackPostView(long postId);
 }

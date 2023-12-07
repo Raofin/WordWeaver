@@ -12,7 +12,9 @@ public interface ITokenService
 
 public interface IAuthenticatedUser
 {
-    string? ClientIpAddress { get; }
+    string? IpAddress { get; }
 
-    long? UserId { get; }
+    long UserId { get; }
+
+    long? UserIdNullable { get; }
 }

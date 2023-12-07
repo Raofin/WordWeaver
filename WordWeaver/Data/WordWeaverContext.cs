@@ -22,6 +22,8 @@ public partial class WordWeaverContext : DbContext
 
     public virtual DbSet<Email> Emails { get; set; }
 
+    public virtual DbSet<Error> Errors { get; set; }
+
     public virtual DbSet<Login> Logins { get; set; }
 
     public virtual DbSet<Otp> Otps { get; set; }
@@ -98,6 +100,22 @@ public partial class WordWeaverContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.EmailTo).HasMaxLength(255);
             entity.Property(e => e.Subject).HasMaxLength(255);
+        });
+
+        modelBuilder.Entity<Error>(entity =>
+        {
+            entity.ToTable("Errors", "log");
+
+            entity.Property(e => e.HttpMethod).HasMaxLength(50);
+            entity.Property(e => e.IpAddress).HasMaxLength(50);
+            entity.Property(e => e.Timestamp)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Errors)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Errors_Users");
         });
 
         modelBuilder.Entity<Login>(entity =>
@@ -315,8 +333,8 @@ public partial class WordWeaverContext : DbContext
                 .HasDefaultValueSql("(getutcdate())")
                 .HasColumnType("datetime");
 
-            entity.HasOne(d => d.Blog).WithMany(p => p.Views)
-                .HasForeignKey(d => d.BlogId)
+            entity.HasOne(d => d.Post).WithMany(p => p.Views)
+                .HasForeignKey(d => d.PostId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FK_BlogViews_Blogs");
 
