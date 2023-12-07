@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.JsonMultipartFormDataSupport.Extensions;
+using Swashbuckle.AspNetCore.JsonMultipartFormDataSupport.Integrations;
 using System.Text;
 using WordWeaver;
 using WordWeaver.Data;
@@ -27,8 +29,8 @@ builder.Services.AddControllers(options => {
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddJsonMultipartFormDataSupport(JsonSerializerChoice.Newtonsoft);
 builder.Services.AddAutoMapper(typeof(Program));
-
 builder.Services.AddDbContext<WordWeaverContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 

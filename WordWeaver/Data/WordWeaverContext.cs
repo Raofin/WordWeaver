@@ -36,11 +36,15 @@ public partial class WordWeaverContext : DbContext
 
     public virtual DbSet<RoleEnum> RoleEnums { get; set; }
 
+    public virtual DbSet<Social> Socials { get; set; }
+
     public virtual DbSet<Tag> Tags { get; set; }
 
     public virtual DbSet<TagEnum> TagEnums { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+
+    public virtual DbSet<UserDetail> UserDetails { get; set; }
 
     public virtual DbSet<UserRole> UserRoles { get; set; }
 
@@ -244,6 +248,28 @@ public partial class WordWeaverContext : DbContext
                 .HasColumnType("datetime");
         });
 
+        modelBuilder.Entity<Social>(entity =>
+        {
+            entity.HasKey(e => e.SocialId).HasName("PK_SocialMedia");
+
+            entity.ToTable("Socials", "user", tb => tb.HasTrigger("trgSocialMediasSetUpdateDatetime"));
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.SocialName).HasMaxLength(50);
+            entity.Property(e => e.SocialUrl).HasMaxLength(100);
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("(NULL)")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Socials)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_SocialMedia_Users");
+        });
+
         modelBuilder.Entity<Tag>(entity =>
         {
             entity.HasKey(e => e.TagId).HasName("PK_BlogTags");
@@ -297,6 +323,33 @@ public partial class WordWeaverContext : DbContext
                 .HasDefaultValueSql("(NULL)")
                 .HasColumnType("datetime");
             entity.Property(e => e.Username).HasMaxLength(255);
+        });
+
+        modelBuilder.Entity<UserDetail>(entity =>
+        {
+            entity.HasKey(e => e.ProfileId).HasName("PK_Profiles");
+
+            entity.ToTable("UserDetails", "user", tb => tb.HasTrigger("trgProfilesSetUpdateDatetime"));
+
+            entity.Property(e => e.AvatarFileId).HasComment("Fk from Cloudfiles");
+            entity.Property(e => e.Bio).HasMaxLength(255);
+            entity.Property(e => e.Birthday).HasColumnType("datetime");
+            entity.Property(e => e.Country).HasMaxLength(50);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.FullName).HasMaxLength(50);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.Phone).HasMaxLength(50);
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("(NULL)")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Website).HasMaxLength(100);
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserDetails)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Profiles_Users");
         });
 
         modelBuilder.Entity<UserRole>(entity =>

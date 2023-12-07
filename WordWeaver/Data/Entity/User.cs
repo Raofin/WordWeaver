@@ -31,6 +31,10 @@ public partial class User
 
     public virtual ICollection<React> Reacts { get; set; } = new List<React>();
 
+    public virtual ICollection<Social> Socials { get; set; } = new List<Social>();
+
+    public virtual ICollection<UserDetail> UserDetails { get; set; } = new List<UserDetail>();
+
     public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 
     public virtual ICollection<View> Views { get; set; } = new List<View>();

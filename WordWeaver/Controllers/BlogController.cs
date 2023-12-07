@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using WordWeaver.Dtos;
-using WordWeaver.Services.Core.Interfaces;
+using WordWeaver.Services.Interfaces;
 
 namespace WordWeaver.Controllers
 {
@@ -74,10 +74,11 @@ namespace WordWeaver.Controllers
                 : BadRequest(response);
         }
 
-        /*[HttpPost("TrackView")]
+        [HttpPost("TrackPostView")]
         public async Task<IActionResult> TrackPostView(long postId)
         {
             await blogService.TrackPostView(postId);
-        }*/
+            return Ok();
+        }
     }
 }

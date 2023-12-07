@@ -1,5 +1,7 @@
-﻿using WordWeaver.Services.Core;
+﻿using WordWeaver.Services;
+using WordWeaver.Services.Core;
 using WordWeaver.Services.Core.Interfaces;
+using WordWeaver.Services.Interfaces;
 
 namespace WordWeaver;
 
@@ -17,6 +19,6 @@ public class Dependencies
         services.AddScoped<ILoggerService, LoggerService>();
 
         services.AddScoped<IBlogService, BlogService>();
-
+        services.AddScoped<IUserService, UserService>();
     }
 }

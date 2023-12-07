@@ -1,6 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using WordWeaver.Validations;
 
 namespace WordWeaver.Dtos;
+
+#region ### Auth Dtos ###
+
 public class LoginDto
 {
     public string UsernameOrEmail { get; set; } = null!;
@@ -74,3 +78,71 @@ public class RoleDto
 
     public bool? IsActive { get; set; }
 }
+
+#endregion ### Auth Dtos ###
+
+#region ### User Detail Dtos ###
+
+public class UserDetailsDto
+{
+    public long ProfileId { get; set; }
+
+    public long UserId { get; set; }
+
+    public string? FullName { get; set; }
+
+    public string? Bio { get; set; }
+
+    [MinimumAge(9)]
+    public DateTime? Birthday { get; set; }
+
+    public string? Country { get; set; }
+
+    public string? Website { get; set; }
+
+    public string? Phone { get; set; }
+
+    public List<SocialDto>? Socials { get; set; }
+
+    public bool? IsActive { get; set; }
+}
+
+public class ProfileDto
+{
+    public long ProfileId { get; set; }
+
+    public long UserId { get; set; }
+
+    public string Username { get; set; } = null!;
+
+    public string Email { get; set; } = null!;
+
+    public string? FullName { get; set; }
+
+    public string? Bio { get; set; }
+
+    public DateTime? Birthday { get; set; }
+
+    public string? Country { get; set; }
+
+    public string? Phone { get; set; }
+
+    public string? Website { get; set; }
+
+    public long? AvatarFileId { get; set; }
+
+    public DateTime? JoinedDate { get; set; }
+
+    public List<SocialDto>? Socials { get; set; }
+}
+
+public class SocialDto
+{
+    public long SocialId { get; set; }
+
+    public string? SocialName { get; set; }
+
+    public string? SocialUrl { get; set; }
+}
+
+#endregion ### User Detail Dtos ###

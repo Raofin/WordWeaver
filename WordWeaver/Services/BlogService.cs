@@ -6,8 +6,9 @@ using WordWeaver.Data.Entity;
 using WordWeaver.Dtos;
 using WordWeaver.Extensions;
 using WordWeaver.Services.Core.Interfaces;
+using WordWeaver.Services.Interfaces;
 
-namespace WordWeaver.Services.Core;
+namespace WordWeaver.Services;
 
 public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticatedUser authenticatedUser, ILoggerService log) : IBlogService
 {
@@ -54,11 +55,11 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
                 };
             }
 
-            post.Title = updatePostDto.Title?? post.Title;
-            post.Description = updatePostDto.Description?? post.Description;
-            post.Text = updatePostDto.Text?? post.Text;
+            post.Title = updatePostDto.Title ?? post.Title;
+            post.Description = updatePostDto.Description ?? post.Description;
+            post.Text = updatePostDto.Text ?? post.Text;
             post.FileIds = updatePostDto.FileIds.ToCommaSeparatedString() ?? post.FileIds;
-            post.IsPublished = updatePostDto.IsPublished?? post.IsPublished;
+            post.IsPublished = updatePostDto.IsPublished ?? post.IsPublished;
 
             await context.SaveChangesAsync();
 
@@ -196,10 +197,11 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
 
             var view = new View {
                 PostId = postId,
-                UserId = authenticatedUser.UserId,
+                UserId = authenticatedUser.UserIdNullable,
                 IpAddress = authenticatedUser.IpAddress,
             };
 
+            await context.AddAsync(view);
             await context.SaveChangesAsync();
 
         } catch (Exception ex)

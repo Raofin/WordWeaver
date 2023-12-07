@@ -9,7 +9,7 @@ namespace WordWeaver.Controllers
     [AllowAnonymous]
     [ApiController]
     [Route("api/auth")]
-    public class AuthController(IAuthService authService) : ControllerBase
+    public class AuthController(IAuthService authService, ITokenService tokenService) : ControllerBase
     {
         [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginDto model)
@@ -68,6 +68,20 @@ namespace WordWeaver.Controllers
             }
 
             return BadRequest(ModelState);
+        }
+
+        [HttpGet("DecodeJwt")]
+        public IActionResult DecodeJwt()
+        {
+            try
+            {
+                var decodedJwt = tokenService.DecodeJwt();
+                return Ok(decodedJwt);
+
+            } catch (Exception ex)
+            {
+                return Ok($"Error: {ex.Message}");
+            }
         }
     }
 }
