@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using WordWeaver.Helper;
 
 namespace WordWeaver.Dtos;
 
@@ -54,5 +55,20 @@ public class UpdatePostDto
     
     public bool? IsPublished { get; set; }
     
+    public bool? IsActive { get; set; }
+}
+
+public class ReactDto
+{
+    public long ReactId { get; set; }
+
+    public long? UserId { get; set; }
+
+    public long? BlogId { get; set; }
+
+    public long? CommentId { get; set; }
+
+    public ReactTypes ReactEnumId { get; set; }
+
     public bool? IsActive { get; set; }
 }

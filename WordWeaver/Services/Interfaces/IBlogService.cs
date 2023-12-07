@@ -15,4 +15,6 @@ public interface IBlogService
     Task<ResponseHelper<PagedResult<PostPreviewDto>>> GetPosts(string? searchQuery, int pageIndex = 1, int pageSize = 10);
 
     Task TrackPostView(long postId);
+
+    Task<ResponseHelper> SaveReact(ReactDto dto);
 }

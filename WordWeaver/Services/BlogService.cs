@@ -30,7 +30,8 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
                 StatusCode = HttpStatusCode.OK
             };
 
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             return new ResponseHelper {
                 Id = createPostDto.PostId,
@@ -69,7 +70,8 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
                 Id = post.PostId
             };
 
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             return new ResponseHelper {
                 Id = updatePostDto.PostId,
@@ -103,7 +105,8 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
                 StatusCode = HttpStatusCode.OK
             };
 
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             return new ResponseHelper {
                 Id = postId,
@@ -125,7 +128,8 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
                 Data = mapper.Map<PostDto>(post)
             };
 
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             return new ResponseHelper<PostDto> {
                 Message = $"Error: {ex.Message}",
@@ -173,7 +177,8 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
                 Data = pagedResult
             };
 
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             return new ResponseHelper<PagedResult<PostPreviewDto>> {
                 Message = $"Error: {ex.Message}",
@@ -181,10 +186,6 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
             };
         }
     }
-
-    #endregion ### Blog Post CRUD ###
-
-    #region ### Post Views ###
 
     public async Task TrackPostView(long postId)
     {
@@ -204,11 +205,79 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
             await context.AddAsync(view);
             await context.SaveChangesAsync();
 
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             await log.Error(ex);
         }
     }
 
-    #endregion ### Post Views ###
+    #endregion ### Blog Post CRUD ###
+
+    #region ### Reacts ###
+
+    public async Task<ResponseHelper> SaveReact(ReactDto dto)
+    {
+        try
+        {
+            var res = new ResponseHelper();
+
+            if ((dto.BlogId > 0 && dto.CommentId > 0) || (dto.BlogId <= 0 && dto.CommentId <= 0 ))
+            {
+                res.StatusCode = HttpStatusCode.BadRequest;
+                res.Message = "Either BlogId or CommentId must be provided, but not both.";
+                return res;
+            }
+
+            if (dto.ReactId > 0) // update
+            {
+                var extData = await context.Reacts.FirstOrDefaultAsync(x => x.ReactId == dto.ReactId);
+
+                if (extData == null)
+                {
+                    res.Id = dto.ReactId;
+                    res.StatusCode = HttpStatusCode.NotFound;
+                    res.Message = "React not found";
+                    return res;
+                }
+
+                extData.ReactEnumId = (int?)dto.ReactEnumId ?? extData.ReactEnumId;
+                extData.IsActive = dto.IsActive.HasValue ? dto.IsActive : extData.IsActive;
+
+                await context.SaveChangesAsync();
+
+                res.Id = dto.ReactId;
+                res.Message = "React updated successfully";
+            }
+            else // create
+            {
+                var data = new React {
+                    UserId = authenticatedUser.UserId,
+                    BlogId = dto.BlogId,
+                    CommentId = dto.CommentId,
+                    ReactEnumId = (int)dto.ReactEnumId,
+                };
+
+                await context.Reacts.AddAsync(data);
+                await context.SaveChangesAsync();
+
+                res.Id = data.ReactId;
+                res.Message = "React created successfully";
+            }
+
+            res.StatusCode = HttpStatusCode.OK;
+            return res;
+        }
+        catch (Exception ex)
+        {
+            await log.Error(ex);
+
+            return new ResponseHelper {
+                Message = $"Error: {ex.Message}",
+                StatusCode = HttpStatusCode.InternalServerError
+            };
+        }
+    }
+
+    #endregion ### Reacts ###
 }

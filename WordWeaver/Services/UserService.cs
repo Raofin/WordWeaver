@@ -38,6 +38,8 @@ public class UserService(WordWeaverContext context, IAuthenticatedUser authentic
                              SocialId = s.SocialId,
                              SocialName = s.SocialName,
                              SocialUrl = s.SocialUrl,
+                             Description = s.Description,
+                             IsActive = s.IsActive
                          }).ToList()
                  })
                  .FirstOrDefaultAsync();

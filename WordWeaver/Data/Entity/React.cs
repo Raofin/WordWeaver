@@ -11,11 +11,15 @@ public partial class React
 
     public long? BlogId { get; set; }
 
+    public long? CommentId { get; set; }
+
     public long? ReactEnumId { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
+
+    public bool? IsActive { get; set; }
 
     public virtual Post? Blog { get; set; }
 

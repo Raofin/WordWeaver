@@ -80,5 +80,15 @@ namespace WordWeaver.Controllers
             await blogService.TrackPostView(postId);
             return Ok();
         }
+
+        [HttpPost("SaveReact")]
+        public async Task<IActionResult> SaveReact(ReactDto reactDto)
+        {
+            var response = await blogService.SaveReact(reactDto);
+
+            return response.StatusCode == HttpStatusCode.OK
+                ? Ok(response)
+                : BadRequest(response);
+        }
     }
 }

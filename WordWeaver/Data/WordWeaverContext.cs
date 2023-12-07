@@ -252,7 +252,7 @@ public partial class WordWeaverContext : DbContext
         {
             entity.HasKey(e => e.SocialId).HasName("PK_SocialMedia");
 
-            entity.ToTable("Socials", "user", tb => tb.HasTrigger("trgSocialMediasSetUpdateDatetime"));
+            entity.ToTable("Socials", "user", tb => tb.HasTrigger("trgSocialsSetUpdateDatetime"));
 
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getutcdate())")
@@ -329,7 +329,7 @@ public partial class WordWeaverContext : DbContext
         {
             entity.HasKey(e => e.ProfileId).HasName("PK_Profiles");
 
-            entity.ToTable("UserDetails", "user", tb => tb.HasTrigger("trgProfilesSetUpdateDatetime"));
+            entity.ToTable("UserDetails", "user", tb => tb.HasTrigger("trgUserDetailsSetUpdateDatetime"));
 
             entity.Property(e => e.AvatarFileId).HasComment("Fk from Cloudfiles");
             entity.Property(e => e.Bio).HasMaxLength(255);
