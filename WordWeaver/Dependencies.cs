@@ -20,5 +20,6 @@ public class Dependencies
 
         services.AddScoped<IBlogService, BlogService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IAdminService, AdminService>();
     }
 }
