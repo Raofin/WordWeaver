@@ -1,4 +1,4 @@
-﻿namespace WordWeaver.Helper;
+﻿namespace WordWeaver.Helpers;
 
 public enum Roles
 {

@@ -9,6 +9,7 @@ using Swashbuckle.AspNetCore.JsonMultipartFormDataSupport.Extensions;
 using Swashbuckle.AspNetCore.JsonMultipartFormDataSupport.Integrations;
 using System.Text;
 using WordWeaver;
+using WordWeaver.Attributes;
 using WordWeaver.Data;
 using WordWeaver.Services.Core.Interfaces;
 
@@ -28,7 +29,6 @@ builder.Services.AddControllers(options => {
 });*/
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddJsonMultipartFormDataSupport(JsonSerializerChoice.Newtonsoft);
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddDbContext<WordWeaverContext>(options =>
@@ -64,6 +64,8 @@ builder.Services.AddSwaggerGen(option => {
             Array.Empty<string>()
         }
     });
+
+    option.SchemaFilter<SwaggerSkipPropertyFilter>();
 });
 
 // Configure CORS policy to allow requests from any origin.

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-using WordWeaver.Helper;
+using WordWeaver.Attributes;
+using WordWeaver.Helpers;
 
 namespace WordWeaver.Dtos;
 
@@ -62,6 +62,7 @@ public class ReactDto
 {
     public long ReactId { get; set; }
 
+    [SwaggerIgnore]
     public long? UserId { get; set; }
 
     public long? BlogId { get; set; }

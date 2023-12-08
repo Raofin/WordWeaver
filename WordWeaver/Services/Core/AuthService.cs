@@ -4,7 +4,7 @@ using System.Net;
 using System.Security.Cryptography;
 using WordWeaver.Data;
 using WordWeaver.Data.Entity;
-using WordWeaver.Helper;
+using WordWeaver.Helpers;
 using WordWeaver.Dtos;
 using AutoMapper;
 using WordWeaver.Services.Core.Interfaces;
