@@ -16,6 +16,8 @@ public partial class WordWeaverContext : DbContext
     {
     }
 
+    public virtual DbSet<Bookmark> Bookmarks { get; set; }
+
     public virtual DbSet<CloudFile> CloudFiles { get; set; }
 
     public virtual DbSet<Comment> Comments { get; set; }
@@ -55,6 +57,29 @@ public partial class WordWeaverContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Bookmark>(entity =>
+        {
+            entity.ToTable("Bookmarks", "user", tb => tb.HasTrigger("trgBookmarksSetUpdateDatetime"));
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("(NULL)")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.Post).WithMany(p => p.Bookmarks)
+                .HasForeignKey(d => d.PostId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Bookmarks_Posts");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Bookmarks)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Bookmarks_Users");
+        });
+
         modelBuilder.Entity<CloudFile>(entity =>
         {
             entity.HasKey(e => e.FileId);

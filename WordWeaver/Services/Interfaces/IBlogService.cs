@@ -12,7 +12,7 @@ public interface IBlogService
 
     Task<ResponseHelper<PostDto>> GetPost(long postId);
 
-    Task<ResponseHelper<PagedResult<PostPreviewDto>>> GetPosts(string? searchQuery, int pageIndex = 1, int pageSize = 10);
+    Task<ResponseHelper<PagedResult<PostPreviewDto>>> GetPosts(string? searchQuery, int pageIndex = 1, int pageSize = 10, bool currentUser = false);
 
     Task TrackPostView(long postId);
 
@@ -21,4 +21,6 @@ public interface IBlogService
     Task<ResponseHelper> SaveComment(CommentDto dto);
 
     Task<ResponseHelper<List<CommentFetchDto>>> FetchCommentsWithReplies(long blogId, long parentId = 0);
+
+    Task<ResponseHelper> SaveBookmark(long postId);
 }

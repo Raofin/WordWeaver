@@ -28,6 +28,8 @@ public partial class Post
 
     public bool? IsActive { get; set; }
 
+    public virtual ICollection<Bookmark> Bookmarks { get; set; } = new List<Bookmark>();
+
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     public virtual ICollection<React> Reacts { get; set; } = new List<React>();

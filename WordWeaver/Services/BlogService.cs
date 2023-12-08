@@ -138,7 +138,7 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
         }
     }
 
-    public async Task<ResponseHelper<PagedResult<PostPreviewDto>>> GetPosts(string? searchQuery, int pageIndex = 1, int pageSize = 10)
+    public async Task<ResponseHelper<PagedResult<PostPreviewDto>>> GetPosts(string? searchQuery, int pageIndex = 1, int pageSize = 10, bool currentUser = false)
     {
         try
         {
@@ -147,7 +147,9 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
 
             // Retrieve posts with pagination
             var posts = await context.Posts
-                .Where(x => x.IsActive == true && (string.IsNullOrEmpty(searchQuery) || x.Title.Contains(searchQuery) || x.Description.Contains(searchQuery)))
+                .Where(x => x.IsActive == true && x.IsPublished == true
+                        && (currentUser == false || x.UserId == authenticatedUser.UserIdNullable) && x.UserId != null
+                        && (string.IsNullOrEmpty(searchQuery) || x.Title.Contains(searchQuery) || x.Description.Contains(searchQuery)))
                 .OrderByDescending(x => x.CreatedAt)
                 .Skip(skipAmount).Take(pageSize)
                 .Select(x => new PostPreviewDto {
@@ -160,7 +162,9 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
 
             // Count total number of posts without pagination
             var totalPostsCount = await context.Posts
-                .CountAsync(x => x.IsActive == true && (string.IsNullOrEmpty(searchQuery) || x.Title.Contains(searchQuery) || x.Description.Contains(searchQuery)));
+                .CountAsync(x => x.IsActive == true && x.IsPublished == true
+                        && (currentUser == false || x.UserId == authenticatedUser.UserIdNullable) && x.UserId != null
+                        && (string.IsNullOrEmpty(searchQuery) || x.Title.Contains(searchQuery) || x.Description.Contains(searchQuery)));
 
             // Create a PagedResult to encapsulate the result and pagination information
             var pagedResult = new PagedResult<PostPreviewDto> {
@@ -213,8 +217,6 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
     }
 
     #endregion ### Blog Post CRUD ###
-
-    #region ### Reacts ###
 
     public async Task<ResponseHelper> SaveReact(ReactDto dto)
     {
@@ -278,8 +280,6 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
             };
         }
     }
-
-    #endregion ### Reacts ###
 
     public async Task<ResponseHelper> SaveComment(CommentDto dto)
     {
@@ -365,6 +365,61 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
             return new ResponseHelper<List<CommentFetchDto>> {
                 StatusCode = HttpStatusCode.InternalServerError,
                 Message = $"Error: {ex.Message}"
+            };
+        }
+    }
+
+    public async Task<ResponseHelper> SaveBookmark(long postId)
+    {
+        try
+        {
+            var res = new ResponseHelper();
+
+            var post = await context.Posts.FirstOrDefaultAsync(x => x.PostId == postId && x.IsActive == true);
+
+            if (post == null)
+            {
+                res.Id = postId;
+                res.StatusCode = HttpStatusCode.NotFound;
+                res.Message = "Post not found";
+                return res;
+            }
+
+            var bookmark = await context.Bookmarks.FirstOrDefaultAsync(x => x.PostId == postId && x.UserId == authenticatedUser.UserId);
+
+            if (bookmark == null) // create
+            {
+                var data = new Bookmark {
+                    UserId = authenticatedUser.UserId,
+                    PostId = postId,
+                };
+
+                await context.Bookmarks.AddAsync(data);
+                await context.SaveChangesAsync();
+
+                res.Id = data.BookmarkId;
+                res.Message = "Bookmark created successfully";
+            }
+            else // delete
+            {
+                bookmark.IsActive = false;
+                await context.SaveChangesAsync();
+
+                res.Id = bookmark.BookmarkId;
+                res.Message = "Bookmark deleted successfully";
+            }
+
+            res.StatusCode = HttpStatusCode.OK;
+            return res;
+        }
+        catch (Exception ex)
+        {
+            await log.Error(ex);
+
+            return new ResponseHelper {
+                Id = postId,
+                Message = $"Error: {ex.Message}",
+                StatusCode = HttpStatusCode.InternalServerError
             };
         }
     }

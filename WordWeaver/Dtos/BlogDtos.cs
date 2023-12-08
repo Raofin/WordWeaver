@@ -74,6 +74,25 @@ public class ReactDto
     public bool? IsActive { get; set; }
 }
 
+public class UserPostReactsDto
+{
+    public long ReactId { get; set; }
+
+    public long? BlogId { get; set; }
+
+    public ReactTypes? ReactEnumId { get; set; }
+}
+
+
+public class UserCommentReactsDto
+{
+    public long ReactId { get; set; }
+
+    public long? CommentId { get; set; }
+
+    public ReactTypes? ReactEnumId { get; set; }
+}
+
 public class CommentDto
 {
     public long CommentId { get; set; }

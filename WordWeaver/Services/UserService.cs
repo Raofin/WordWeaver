@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 using WordWeaver.Data;
 using WordWeaver.Data.Entity;
@@ -8,8 +9,11 @@ using WordWeaver.Services.Interfaces;
 
 namespace WordWeaver.Services;
 
-public class UserService(WordWeaverContext context, IAuthenticatedUser authenticatedUser, ILoggerService log, ICloudService cloudService) : IUserService
+public class UserService(WordWeaverContext context, IMapper mapper, IAuthenticatedUser authenticatedUser, ILoggerService log, ICloudService cloudService) : IUserService
 {
+
+    #region ### User Profile ###
+
     public async Task<ResponseHelper<ProfileDto>> GetProfile()
     {
         try
@@ -186,4 +190,113 @@ public class UserService(WordWeaverContext context, IAuthenticatedUser authentic
             };
         }
     }
+
+    #endregion ### User Profile ###
+
+    #region ### User Posts ###
+
+    public async Task<ResponseHelper<PostDto>> Posts()
+    {
+        try
+        {
+            var post = await context.Posts.FirstOrDefaultAsync(x => x.UserId == authenticatedUser.UserId && x.IsActive == true);
+
+            return new ResponseHelper<PostDto> {
+                Message = "Post fetched successfully",
+                StatusCode = HttpStatusCode.OK,
+                Data = mapper.Map<PostDto>(post)
+            };
+
+        }
+        catch (Exception ex)
+        {
+            return new ResponseHelper<PostDto> {
+                Message = $"Error: {ex.Message}",
+                StatusCode = HttpStatusCode.InternalServerError
+            };
+        }
+    }
+
+    public async Task<ResponseHelper<PostDto>> Bookmarks()
+    {
+        try
+        {
+            var post = await context.Posts.FirstOrDefaultAsync(x => x.UserId == authenticatedUser.UserId && x.IsActive == true);
+
+            return new ResponseHelper<PostDto> {
+                Message = "Post fetched successfully",
+                StatusCode = HttpStatusCode.OK,
+                Data = mapper.Map<PostDto>(post)
+            };
+        }
+        catch (Exception ex)
+        {
+            await log.Error(ex);
+
+            return new ResponseHelper<PostDto> {
+                Message = $"Error: {ex.Message}",
+                StatusCode = HttpStatusCode.InternalServerError
+            };
+        }
+    }
+
+    public async Task<ResponseHelper<List<UserPostReactsDto>>> PostReacts()
+    {
+        try
+        {
+            var data = await context.Reacts
+                .Where(x => x.UserId == authenticatedUser.UserId && x.IsActive == true && x.BlogId > 0)
+                .Select(x => new UserPostReactsDto {
+                    ReactId = x.ReactId,
+                    BlogId = x.BlogId,
+                    ReactEnumId = (Helpers.ReactTypes?)x.ReactEnumId
+                }).ToListAsync();
+
+            return new ResponseHelper<List<UserPostReactsDto>> {
+                Message = "Post fetched successfully",
+                StatusCode = HttpStatusCode.OK,
+                Data = data
+            };
+        }
+        catch (Exception ex)
+        {
+            await log.Error(ex);
+
+            return new ResponseHelper<List<UserPostReactsDto>> {
+                Message = $"Error: {ex.Message}",
+                StatusCode = HttpStatusCode.InternalServerError
+            };
+        }
+    }
+
+    public async Task<ResponseHelper<List<UserCommentReactsDto>>> CommentReacts()
+    {
+        try
+        {
+            var data = await context.Reacts
+                .Where(x => x.UserId == authenticatedUser.UserId && x.IsActive == true && x.CommentId > 0)
+                .Select(x => new UserCommentReactsDto {
+                    ReactId = x.ReactId,
+                    CommentId = x.BlogId,
+                    ReactEnumId = (Helpers.ReactTypes?)x.ReactEnumId
+                }).ToListAsync();
+
+            return new ResponseHelper<List<UserCommentReactsDto>> {
+                Message = "Post fetched successfully",
+                StatusCode = HttpStatusCode.OK,
+                Data = data
+            };
+        }
+        catch (Exception ex)
+        {
+            await log.Error(ex);
+
+            return new ResponseHelper<List<UserCommentReactsDto>> {
+                Message = $"Error: {ex.Message}",
+                StatusCode = HttpStatusCode.InternalServerError
+            };
+        }
+    }
+
+    #endregion ### User Posts ###
 }

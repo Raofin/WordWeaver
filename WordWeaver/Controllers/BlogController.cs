@@ -12,9 +12,9 @@ namespace WordWeaver.Controllers
     {
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> GetPosts(string? searchQuery, int pageIndex = 1, int pageSize = 10)
+        public async Task<IActionResult> GetPosts(string? searchQuery, int pageIndex = 1, int pageSize = 10, bool currentUser = false)
         {
-            var response = await blogService.GetPosts(searchQuery, pageIndex, pageSize);
+            var response = await blogService.GetPosts(searchQuery, pageIndex, pageSize, currentUser);
 
             return response.StatusCode == HttpStatusCode.OK
                 ? Ok(response.Data)
@@ -108,6 +108,16 @@ namespace WordWeaver.Controllers
 
             return response.StatusCode == HttpStatusCode.OK
                 ? Ok(response.Data)
+                : BadRequest(response);
+        }
+
+        [HttpPost("SaveBookmark")]
+        public async Task<IActionResult> SaveBookmark(long postId)
+        {
+            var response = await blogService.SaveBookmark(postId);
+
+            return response.StatusCode == HttpStatusCode.OK
+                ? Ok(response)
                 : BadRequest(response);
         }
     }
