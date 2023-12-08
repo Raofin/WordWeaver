@@ -9,13 +9,19 @@ public partial class Comment
 
     public long? UserId { get; set; }
 
+    public long? BlogId { get; set; }
+
     public string Text { get; set; } = null!;
 
-    public long ParentId { get; set; }
+    public long? ParentId { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
 
     public bool? IsActive { get; set; }
+
+    public virtual Post? Blog { get; set; }
+
+    public virtual User? User { get; set; }
 }

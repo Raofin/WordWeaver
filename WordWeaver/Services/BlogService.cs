@@ -222,7 +222,7 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
         {
             var res = new ResponseHelper();
 
-            if ((dto.BlogId > 0 && dto.CommentId > 0) || (dto.BlogId <= 0 && dto.CommentId <= 0 ))
+            if ((dto.BlogId > 0 && dto.CommentId > 0) || (dto.BlogId <= 0 && dto.CommentId <= 0))
             {
                 res.StatusCode = HttpStatusCode.BadRequest;
                 res.Message = "Either BlogId or CommentId must be provided, but not both.";
@@ -280,4 +280,92 @@ public class BlogService(WordWeaverContext context, IMapper mapper, IAuthenticat
     }
 
     #endregion ### Reacts ###
+
+    public async Task<ResponseHelper> SaveComment(CommentDto dto)
+    {
+        try
+        {
+            var res = new ResponseHelper();
+
+            if (dto.CommentId > 0) // update
+            {
+                var extData = await context.Comments.FirstOrDefaultAsync(x => x.CommentId == dto.CommentId);
+
+                if (extData == null)
+                {
+                    res.Id = dto.CommentId;
+                    res.StatusCode = HttpStatusCode.NotFound;
+                    res.Message = "Comment not found";
+                    return res;
+                }
+
+                extData.Text = dto.Text ?? extData.Text;
+                extData.IsActive = dto.IsActive.HasValue ? dto.IsActive : extData.IsActive;
+
+                await context.SaveChangesAsync();
+
+                res.Id = dto.CommentId;
+                res.Message = "Comment updated successfully";
+            }
+            else // create
+            {
+                var data = new Comment {
+                    UserId = authenticatedUser.UserId,
+                    BlogId = dto.BlogId,
+                    Text = dto.Text,
+                    ParentId = dto.ParentId,
+                };
+
+                await context.Comments.AddAsync(data);
+                await context.SaveChangesAsync();
+
+                res.Id = data.CommentId;
+                res.Message = "Comment created successfully";
+            }
+
+            res.StatusCode = HttpStatusCode.OK;
+            return res;
+        }
+        catch (Exception ex)
+        {
+            await log.Error(ex);
+
+            return new ResponseHelper {
+                Message = $"Error: {ex.Message}",
+                StatusCode = HttpStatusCode.InternalServerError
+            };
+        }
+    }
+
+    public async Task<ResponseHelper<List<CommentFetchDto>>> FetchCommentsWithReplies(long blogId, long parentId = 0)
+    {
+        try
+        {
+            var comments = await context.Comments
+            .Where(c => c.BlogId == blogId && c.ParentId == parentId && c.IsActive == true)
+            .ToListAsync();
+
+            var commentFetchDtos = mapper.Map<List<CommentFetchDto>>(comments);
+
+            foreach (var item in commentFetchDtos)
+            {
+                var replies = await FetchCommentsWithReplies(blogId, item.CommentId);
+                item.Replies = replies.Data;
+            }
+
+            return new ResponseHelper<List<CommentFetchDto>> {
+                StatusCode = HttpStatusCode.OK,
+                Data = commentFetchDtos
+            };
+        }
+        catch (Exception ex)
+        {
+            await log.Error(ex);
+
+            return new ResponseHelper<List<CommentFetchDto>> {
+                StatusCode = HttpStatusCode.InternalServerError,
+                Message = $"Error: {ex.Message}"
+            };
+        }
+    }
 }

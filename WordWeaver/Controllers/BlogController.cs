@@ -6,11 +6,11 @@ using WordWeaver.Services.Interfaces;
 
 namespace WordWeaver.Controllers
 {
-    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class BlogController(IBlogService blogService) : ControllerBase
     {
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetPosts(string? searchQuery, int pageIndex = 1, int pageSize = 10)
         {
@@ -21,6 +21,7 @@ namespace WordWeaver.Controllers
                 : BadRequest(response);
         }
 
+        [AllowAnonymous]
         [HttpGet("{postId}")]
         public async Task<IActionResult> GetBlog(long postId)
         {
@@ -31,7 +32,6 @@ namespace WordWeaver.Controllers
                 : BadRequest(response);
         }
 
-        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateBlog(PostDto createPostDto)
         {
@@ -47,7 +47,6 @@ namespace WordWeaver.Controllers
             return BadRequest(ModelState);
         }
 
-        [Authorize]
         [HttpPut]
         public async Task<IActionResult> UpdateBlog(UpdatePostDto updatePostDto)
         {
@@ -63,7 +62,6 @@ namespace WordWeaver.Controllers
             return BadRequest(ModelState);
         }
 
-        [Authorize]
         [HttpDelete("{postId}")]
         public async Task<IActionResult> DeleteBlog(long postId)
         {
@@ -74,6 +72,7 @@ namespace WordWeaver.Controllers
                 : BadRequest(response);
         }
 
+        [AllowAnonymous]
         [HttpPost("TrackPostView")]
         public async Task<IActionResult> TrackPostView(long postId)
         {
@@ -88,6 +87,27 @@ namespace WordWeaver.Controllers
 
             return response.StatusCode == HttpStatusCode.OK
                 ? Ok(response)
+                : BadRequest(response);
+        }
+
+        [HttpPost("SaveComment")]
+        public async Task<IActionResult> SaveComment(CommentDto commentDto)
+        {
+            var response = await blogService.SaveComment(commentDto);
+
+            return response.StatusCode == HttpStatusCode.OK
+                ? Ok(response)
+                : BadRequest(response);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("CommentsWithReplies")]
+        public async Task<IActionResult> CommentsWithReplies(long blogId)
+        {
+            var response = await blogService.FetchCommentsWithReplies(blogId);
+
+            return response.StatusCode == HttpStatusCode.OK
+                ? Ok(response.Data)
                 : BadRequest(response);
         }
     }

@@ -14,5 +14,6 @@ public class BlogProfiles : Profile
         CreateMap<PostDto, Post>()
             .ForMember(dest => dest.PostId, opt => opt.Ignore())
             .ForMember(dest => dest.FileIds, opt => opt.MapFrom(src => src.FileIds.ToCommaSeparatedString()));
+        CreateMap<Comment, CommentFetchDto>();
     }
 }

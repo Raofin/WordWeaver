@@ -73,3 +73,42 @@ public class ReactDto
 
     public bool? IsActive { get; set; }
 }
+
+public class CommentDto
+{
+    public long CommentId { get; set; }
+
+    public long? UserId { get; set; }
+
+    [Required]
+    public long? BlogId { get; set; }
+
+    [Required]
+    [MinLength(10)]
+    public string Text { get; set; } = null!;
+
+    public long? ParentId { get; set; }
+
+    public bool? IsActive { get; set; }
+}
+
+public class CommentFetchDto
+{
+    public long CommentId { get; set; }
+
+    public long? UserId { get; set; }
+
+    public long? BlogId { get; set; }
+
+    public string Text { get; set; } = null!;
+
+    public long? ParentId { get; set; }
+
+    public DateTime? CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
+
+    public bool? IsActive { get; set; }
+
+    public List<CommentFetchDto>? Replies { get; set; }
+}

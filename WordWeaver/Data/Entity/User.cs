@@ -23,6 +23,8 @@ public partial class User
 
     public virtual ICollection<CloudFile> CloudFiles { get; set; } = new List<CloudFile>();
 
+    public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
+
     public virtual ICollection<Error> Errors { get; set; } = new List<Error>();
 
     public virtual ICollection<Login> Logins { get; set; } = new List<Login>();

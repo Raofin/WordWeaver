@@ -17,4 +17,8 @@ public interface IBlogService
     Task TrackPostView(long postId);
 
     Task<ResponseHelper> SaveReact(ReactDto dto);
+
+    Task<ResponseHelper> SaveComment(CommentDto dto);
+
+    Task<ResponseHelper<List<CommentFetchDto>>> FetchCommentsWithReplies(long blogId, long parentId = 0);
 }

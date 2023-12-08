@@ -90,9 +90,20 @@ public partial class WordWeaverContext : DbContext
                 .HasDefaultValueSql("(getutcdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ParentId).HasDefaultValue(0L);
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(NULL)")
                 .HasColumnType("datetime");
+
+            entity.HasOne(d => d.Blog).WithMany(p => p.Comments)
+                .HasForeignKey(d => d.BlogId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Comments_Posts");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Comments)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Comments_Users");
         });
 
         modelBuilder.Entity<Email>(entity =>
