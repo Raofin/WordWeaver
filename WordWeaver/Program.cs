@@ -19,6 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 Dependencies.RegisterServices(builder.Services);
 
+DinkToPdfAll.LibraryLoader.Load();
 
 builder.Services.AddControllers(options => {
     options.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()));

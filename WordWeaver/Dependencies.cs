@@ -1,7 +1,10 @@
-﻿using WordWeaver.Services;
+﻿using DinkToPdf.Contracts;
+using DinkToPdf;
+using WordWeaver.Services;
 using WordWeaver.Services.Core;
 using WordWeaver.Services.Core.Interfaces;
 using WordWeaver.Services.Interfaces;
+using WordWeaver.Services.Pdf;
 
 namespace WordWeaver;
 
@@ -9,6 +12,8 @@ public class Dependencies
 {
     public static void RegisterServices(IServiceCollection services)
     {
+        services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
+
         services.AddTransient<IAppSettingsService, AppSettingsService>();
         services.AddTransient<IMailService, MailService>();
 
@@ -21,5 +26,7 @@ public class Dependencies
         services.AddScoped<IBlogService, BlogService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAdminService, AdminService>();
+        services.AddScoped<IHtmlGeneratorService, HtmlGeneratorService>();
+        services.AddScoped<IPdfService, PdfService>();
     }
 }
