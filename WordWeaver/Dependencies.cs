@@ -28,5 +28,6 @@ public class Dependencies
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IHtmlGeneratorService, HtmlGeneratorService>();
         services.AddScoped<IPdfService, PdfService>();
+        services.AddScoped<IExcelService, ExcelService>();
     }
 }
