@@ -8,7 +8,7 @@
 
 🚧 This project is currently under **active development** and is not fully completed. Expect frequent updates as I enhance its features and functionality.
 
-🎨 **Figma Mockup:** [figma.raofin.net/WordWeaver](https://figma.raofin.net/WordWeaver)
+🎨 **Figma Mockup:** [figma.rawfin.net/WordWeaver](https://figma.rawfin.net/WordWeaver)
 
 <h2 align="center">Screenshots</h2>
 <p align= "center">
